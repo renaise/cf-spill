@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Cracked</title>
 <meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Cracked">
@@ -203,7 +204,7 @@
 </main>
 
 <div id="install">
-  <span style="flex:1">Add Cracked to your home screen.</span>
+  <span id="installMsg" style="flex:1">Add Cracked to your home screen.</span>
   <button class="btn" id="installGo">Install</button>
   <button class="btn" id="installNo" style="background:none;color:#000;border-color:#ccc">Later</button>
 </div>
@@ -401,14 +402,35 @@ $('#cBuild').addEventListener('click', () => {
   navigator.clipboard?.writeText(cmd);
 });
 
-// install prompt
+// install
+// iOS Safari never fires beforeinstallprompt, so the Android path alone leaves
+// iPhone users with no way to discover the install. Detect and instruct instead.
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+         || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+function dismissed(){ try { return localStorage.getItem('cracked.install') === 'no'; } catch (e) { return false; } }
+function dismiss(){ try { localStorage.setItem('cracked.install', 'no'); } catch (e) {} }
+
 let deferred = null;
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('#install').classList.add('on'); });
+addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferred = e;
+  if (!standalone && !dismissed()) $('#install').classList.add('on');
+});
+
+if (iOS && !standalone && !dismissed()) {
+  $('#installMsg').innerHTML = 'Install Cracked: tap Share, then <b>Add to Home Screen</b>.';
+  $('#installGo').hidden = true;
+  $('#installNo').textContent = 'Got it';
+  $('#install').classList.add('on');
+}
+
 $('#installGo').addEventListener('click', async () => {
   $('#install').classList.remove('on');
   if (deferred) { deferred.prompt(); await deferred.userChoice; deferred = null; }
 });
-$('#installNo').addEventListener('click', () => $('#install').classList.remove('on'));
+$('#installNo').addEventListener('click', () => { $('#install').classList.remove('on'); dismiss(); });
+addEventListener('appinstalled', () => { $('#install').classList.remove('on'); dismiss(); });
 
 renderFeed(); renderArchive();
 if ('serviceWorker' in navigator) {
