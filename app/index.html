@@ -60,7 +60,9 @@
     display:flex;flex-direction:column;
   }
   .stage{position:relative;flex:1 1 auto;min-height:0;background:var(--card);overflow:hidden}
-  .face{position:absolute;inset:0;padding:26px 22px;display:flex;flex-direction:column;justify-content:center;overflow-y:auto}
+  .face{position:absolute;inset:0;padding:26px 22px;display:flex;flex-direction:column;overflow-y:auto}
+  .face[data-face="claim"]{justify-content:flex-end;padding-right:58px;padding-bottom:30px}
+  .face[data-face="doc"]{justify-content:flex-start;padding-top:156px}
   .face[hidden]{display:none}
   .face .lbl{font-size:10px;color:var(--dim);margin-bottom:14px}
   .claimtext{font-size:clamp(20px,5.6vw,27px);line-height:1.25;font-weight:600;letter-spacing:-.02em}
@@ -152,7 +154,7 @@
 </head>
 <body>
 
-<div id="sample">Sample records · fictional people and companies · not a real archive</div>
+<div id="sample">Sample records · fictional people and companies</div>
 
 <header>
   <div class="brand">
