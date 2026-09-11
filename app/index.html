@@ -53,46 +53,58 @@
   .view.on{display:block}
 
   /* ---- feed: one record per page ---- */
+  /* BeReal anatomy: poster row, fixed-ratio stage, reaction row, comment line.
+     The stage must NOT be flex:1 -- stretching it to fill leaves a dead middle. */
   #feed{scroll-snap-type:y mandatory}
   .rec{
     scroll-snap-align:start;scroll-snap-stop:always;
-    height:100%;padding:12px 16px calc(var(--nav) + 12px);
+    min-height:100%;padding:8px 10px calc(var(--nav) + 10px);
     display:flex;flex-direction:column;
   }
-  .stage{position:relative;flex:1 1 auto;min-height:0;background:var(--card);overflow:hidden}
-  .face{position:absolute;inset:0;padding:26px 22px;display:flex;flex-direction:column;overflow-y:auto}
-  .face[data-face="claim"]{justify-content:flex-end;padding-bottom:28px}
-  .face[data-face="doc"]{justify-content:flex-start;padding-top:156px}
+  .poster{display:flex;align-items:center;gap:9px;padding:2px 4px 9px}
+  .poster .av{width:30px;height:30px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
+  .poster .av svg{width:17px;height:17px}
+  .poster .nm{font-size:13.5px;font-weight:600;line-height:1.2}
+  .poster .tm{font-size:11.5px;color:var(--dim);line-height:1.2}
+
+  .stage{position:relative;width:100%;aspect-ratio:3/4;background:var(--card);border-radius:16px;overflow:hidden;flex:none}
+  .face{position:absolute;inset:0;padding:22px 18px;display:flex;flex-direction:column;overflow-y:auto}
   .face[hidden]{display:none}
-  .face .lbl{font-size:10px;color:var(--dim);margin-bottom:14px}
-  .claimtext{font-size:clamp(27px,8.4vw,40px);line-height:1.14;font-weight:600;letter-spacing:-.032em}
-  .who{margin-top:18px;font-size:13px;color:var(--dim)}
-  .doc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.65;color:#d6d6d6;white-space:pre-wrap}
+  .face[data-face="claim"]{justify-content:flex-end;padding-bottom:22px}
+  .face[data-face="doc"]{justify-content:flex-start;padding-top:144px}
+  .face .lbl{font-size:10px;color:var(--dim);margin-bottom:10px}
+  .claimtext{font-size:clamp(26px,8vw,38px);line-height:1.13;font-weight:600;letter-spacing:-.032em}
+  .who{margin-top:14px;font-size:12.5px;color:var(--dim)}
+  .doc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;color:#d6d6d6;white-space:pre-wrap}
 
-  /* the inset: BeReal's PiP, carrying the other half of the pair */
   .pip{
-    position:absolute;top:12px;left:12px;width:98px;height:132px;
-    background:#000;border:2px solid #000;outline:1px solid var(--line);
-    padding:9px;overflow:hidden;text-align:left;display:block;
+    position:absolute;top:10px;left:10px;width:92px;height:122px;
+    background:#000;border:2px solid #000;border-radius:11px;
+    padding:8px;overflow:hidden;text-align:left;display:block;
   }
-  .pip .lbl{font-size:8px;color:var(--yolk);margin-bottom:5px}
-  .pip p{font-size:9px;line-height:1.35;color:#bbb;overflow:hidden}
-  .pip::after{content:"";position:absolute;inset:0}
+  .pip .lbl{font-size:8px;color:var(--yolk);margin-bottom:4px}
+  .pip p{font-size:8.5px;line-height:1.32;color:#bbb;overflow:hidden}
 
-  .rail{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:10px}
-  .rail button{width:34px;height:34px;display:grid;place-items:center;background:rgba(0,0,0,.55)}
-  .rail svg{width:19px;height:19px;stroke:#fff;stroke-width:1.7;fill:none}
+  .rail{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:9px}
+  .rail button{width:33px;height:33px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.5)}
+  .rail svg{width:18px;height:18px;stroke:#fff;stroke-width:1.7;fill:none}
 
-  /* ---- status block under the stage ---- */
-  .meta{flex:none;padding-top:13px}
-  .status{display:flex;align-items:center;gap:8px;font-size:12px}
-  .dot{width:7px;height:7px;flex:none}
-  .s-SUPPORTED .dot{background:var(--ok)} .s-SUPPORTED .sv{color:var(--ok)}
-  .s-CONTRADICTED .dot{background:var(--yolk)} .s-CONTRADICTED .sv{color:var(--yolk)}
-  .s-UNSUPPORTED .dot{background:var(--dim)} .s-UNSUPPORTED .sv{color:var(--dim)}
-  .s-UNCHECKABLE .dot{background:var(--dimmer)} .s-UNCHECKABLE .sv{color:var(--dimmer)}
-  .sv{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;font-size:11px}
-  .flip{margin-top:7px;font-size:12.5px;color:var(--dim);line-height:1.45}
+  /* reaction row: BeReal's RealMoji strip, carrying status instead of faces */
+  .chips{display:flex;align-items:center;gap:7px;padding:13px 4px 0;flex:none}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;height:31px;padding:0 12px;
+    border-radius:999px;border:1px solid var(--line);background:#111;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.1em;
+  }
+  .chip .dot{width:7px;height:7px;border-radius:999px;flex:none}
+  .chip.samp{color:var(--dimmer);border-style:dashed}
+  .s-SUPPORTED .chip .dot{background:var(--ok)} .s-SUPPORTED .chip.st{color:var(--ok);border-color:#1c4a2c}
+  .s-CONTRADICTED .chip .dot{background:var(--yolk)} .s-CONTRADICTED .chip.st{color:var(--yolk);border-color:#4a3a0e}
+  .s-UNSUPPORTED .chip .dot{background:var(--dim)} .s-UNSUPPORTED .chip.st{color:var(--dim)}
+  .s-UNCHECKABLE .chip .dot{background:var(--dimmer)} .s-UNCHECKABLE .chip.st{color:var(--dimmer)}
+
+  /* comment line: BeReal's "View comment" slot */
+  .flip{padding:11px 4px 0;font-size:13px;color:var(--dim);line-height:1.45;flex:none}
   .flip b{color:#c9c9c9;font-weight:500}
 
   /* ---- archive grid ---- */
@@ -272,11 +284,17 @@ function renderFeed(){
   const rs = visible();
   $('#feed').innerHTML = rs.map((r, i) => `
     <article class="rec s-${r.status}" data-i="${i}">
+      <div class="poster">
+        <span class="av"><svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z" fill="none" stroke="#fff" stroke-width="8"/>
+          <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="8"/>
+        </svg></span>
+        <span><span class="nm">${esc(r.who)}</span><br><span class="tm">${esc(r.made)}</span></span>
+      </div>
       <div class="stage">
         <div class="face" data-face="claim">
           <div class="lbl mono">The claim</div>
           <div class="claimtext">${esc(r.claim)}</div>
-          <div class="who">${esc(r.who)}<br>${esc(r.made)}</div>
         </div>
         <div class="face" data-face="doc" hidden>
           <div class="lbl mono">The source</div>
@@ -284,17 +302,18 @@ function renderFeed(){
         </div>
         <button class="pip" data-swap aria-label="Swap claim and source">
           <div class="lbl mono" data-piplbl>The source</div>
-          <p data-piptext>${esc(r.doc.slice(0, 108))}</p>
+          <p data-piptext>${esc(r.doc.slice(0, 96))}</p>
         </button>
         <div class="rail">
-          <button data-copy aria-label="Copy record"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12"/><path d="M5 15V4h11"/></svg></button>
+          <button data-copy aria-label="Copy record"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg></button>
           <button data-share aria-label="Share record"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M5 15v4h14v-4"/></svg></button>
         </div>
       </div>
-      <div class="meta">
-        <div class="status"><i class="dot"></i><span class="sv">${r.status}</span><span style="color:var(--dimmer);font-size:11px">· sample</span></div>
-        <div class="flip"><b>Would change it:</b> ${esc(r.flip)}</div>
+      <div class="chips">
+        <span class="chip st"><i class="dot"></i>${r.status}</span>
+        <span class="chip samp">SAMPLE</span>
       </div>
+      <div class="flip"><b>Would change it:</b> ${esc(r.flip)}</div>
     </article>`).join('');
 }
 
@@ -392,7 +411,15 @@ $('#installGo').addEventListener('click', async () => {
 $('#installNo').addEventListener('click', () => $('#install').classList.remove('on'));
 
 renderFeed(); renderArchive();
-if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  // A new worker taking control means the shell changed under us. Reload once so the
+  // running page is never older than the worker serving it.
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return; reloaded = true; location.reload();
+  });
+}
 </script>
 </body>
 </html>

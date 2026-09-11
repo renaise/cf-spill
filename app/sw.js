@@ -1,6 +1,13 @@
-// Cracked app shell. Cache-first for the shell, network-first for everything else.
-// Bump SHELL on any shell change or clients keep the old build.
-const SHELL = 'cracked-shell-v1';
+// Cracked app shell.
+//
+// Navigations are NETWORK-FIRST on purpose. v1 was cache-first for everything with a
+// fixed cache name, which pinned every existing install to the first build it ever
+// loaded: deploys landed correctly and the phone kept showing the old UI. Do not make
+// HTML cache-first again. Static assets stay cache-first since they are content-hashed
+// by name in practice, and they fall back to the network when missing.
+//
+// Bump SHELL whenever the cached asset list changes.
+const SHELL = 'cracked-shell-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -15,12 +22,30 @@ self.addEventListener('activate', e => {
   );
 });
 
+const isPage = req =>
+  req.mode === 'navigate' ||
+  (req.headers.get('accept') || '').includes('text/html');
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
+  if (new URL(req.url).origin !== location.origin) return;
 
+  if (isPage(req)) {
+    // Network first, cache only as an offline fallback.
+    e.respondWith(
+      fetch(req)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(SHELL).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Static assets: serve from cache, refresh in the background.
   e.respondWith(
     caches.match(req).then(hit => {
       const net = fetch(req).then(res => {
