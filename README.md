@@ -17,10 +17,15 @@ from a user path or a bare domain.
 
 ## Deploying
 
-GitHub Pages, `main` branch, root. Currently served from a project path. To move it
-to the bare `cf-cracked.github.io` URL, create a GitHub org named `cf-cracked` and
-transfer this repo to it. The repo name already matches, so no rename or edits are
-needed.
+GitHub Pages, `main` branch, root. Served at `renaise.github.io/cf-spill/`.
+
+The repo is `cf-spill`; the product is **Cracked**. They are deliberately different
+names. Note that `cf-spill` is also the name of the gateway skill.
+
+To serve from a bare `cf-spill.github.io`, the repo would need to be renamed to
+`cf-spill.github.io` and transferred to a GitHub org named `cf-spill`. Both are
+one-command changes. Every path in `index.html` is relative, so the page renders
+correctly at any URL either way.
 
 A custom domain is set in `CNAME` when one is registered.
 
