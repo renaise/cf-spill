@@ -1,0 +1,13 @@
+name = "cracked-api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Fill database_id after: wrangler d1 create cracked
+[[d1_databases]]
+binding = "DB"
+database_name = "cracked"
+database_id = "PLACEHOLDER"
+
+[vars]
+# Origins allowed to call this API. Comma separated, no trailing slash.
+ALLOWED_ORIGINS = "https://renaise.github.io"

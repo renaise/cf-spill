@@ -160,6 +160,13 @@
   .pill .check{width:50px;height:50px;background:#fff;color:#000;border-radius:999px;margin:0 3px}
   .pill .check svg{width:23px;height:23px;stroke:#000;stroke-width:2.1}
 
+  .field{margin-bottom:12px}
+  .sheet select{width:100%;background:#000;border:1px solid var(--line);color:#fff;padding:11px;font:inherit;font-size:15px;border-radius:0}
+  .src{border:1px solid var(--line);padding:11px;margin-bottom:10px}
+  .src .rm{float:right;color:var(--dim);font-size:11px}
+  .err{margin-top:13px;padding:12px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
+  .okmsg{margin-top:13px;padding:12px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
+  .rep{margin-left:auto;font-size:11px;color:var(--dimmer);text-decoration:underline}
   #install{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--nav) + 18px);z-index:35;
     background:#fff;color:#000;padding:12px 14px;align-items:center;gap:12px;font-size:13px}
   #install.on{display:flex}
@@ -229,23 +236,47 @@
 
 <div id="sheet">
   <div class="sheet">
-    <h3>Check a claim</h3>
-    <p>Cracked does not take rumors. Paste the claim and where it was said. This builds the <b style="color:#fff">/cf-spill</b> command that retrieves the documents.</p>
-    <label class="mono">The claim, verbatim</label>
-    <textarea id="cClaim" rows="2" placeholder="&quot;We crossed $4M ARR last month.&quot;"></textarea>
-    <label class="mono">Where it was said</label>
-    <input id="cWhere" type="url" placeholder="https://...">
+    <h3>File a record</h3>
+    <p>Cracked does not take rumors. A record is a public claim plus documents anyone can open.</p>
+
+    <div class="field"><label class="mono">The claim, verbatim</label>
+      <textarea id="fClaim" rows="2" placeholder="&quot;We crossed $4M ARR last month.&quot;"></textarea></div>
+    <div class="field"><label class="mono">Who said it</label>
+      <input id="fWho" placeholder="Name, role, company"></div>
+    <div class="field"><label class="mono">Where</label>
+      <input id="fWhere" placeholder="Conference keynote, podcast, post"></div>
+    <div class="field"><label class="mono">Link to where it was said</label>
+      <input id="fUrl" type="url" placeholder="https://..."></div>
+    <div class="field"><label class="mono">Status</label>
+      <select id="fStatus">
+        <option value="UNSUPPORTED">UNSUPPORTED — nothing found either way</option>
+        <option value="SUPPORTED">SUPPORTED — a document corroborates it</option>
+        <option value="CONTRADICTED">CONTRADICTED — a document says otherwise</option>
+        <option value="UNCHECKABLE">UNCHECKABLE — no public document could settle it</option>
+      </select></div>
+    <div class="field"><label class="mono">What would change the status</label>
+      <input id="fFlip" placeholder="The document that would flip this"></div>
+
+    <label class="mono">Sources</label>
+    <div id="fSources"></div>
+    <button class="btn" id="fAddSrc" style="margin-bottom:13px">Add a source</button>
+
     <div class="row">
-      <button class="btn pri" id="cBuild">Build command</button>
-      <button class="btn" id="cClose">Cancel</button>
+      <button class="btn pri" id="fSubmit">File it</button>
+      <button class="btn" id="fClose">Cancel</button>
     </div>
-    <div class="out" id="cOut" hidden></div>
+    <div class="err" id="fErr" hidden></div>
+    <div class="okmsg" id="fOk" hidden></div>
   </div>
-</div>
 
 <script>
-// Fictional. See the banner. Real records would carry real, openable source URLs.
-const RECORDS = [
+// Records come from the API when one is configured and reachable. When it is not,
+// the app runs on the fictional samples below and the SAMPLE banner stays up. The
+// banner is only removed when real records actually loaded -- never optimistically,
+// because a banner that lies about what you are reading is worse than no banner.
+const API = window.CRACKED_API || '';
+
+const SAMPLES = [
   {
     claim: "We crossed $4M ARR last month, fully bootstrapped.",
     who: "Dex Mallory, founder, Nullset", made: "Conference keynote, 2026-08-14",
@@ -280,7 +311,42 @@ const $ = s => document.querySelector(s);
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let filter = 'all';
 
-function visible(){ return filter === 'all' ? RECORDS : RECORDS.filter(r => r.status !== 'SUPPORTED'); }
+let records = SAMPLES;
+let live = false;   // true only once real records have actually loaded
+
+function visible(){ return filter === 'all' ? records : records.filter(r => r.status !== 'SUPPORTED'); }
+
+// The status chip says SAMPLE per card; the banner says it once at the top. Both are
+// driven off `live` so they cannot disagree with what is on screen.
+function markSampleState(){
+  $('#sample').hidden = live;
+  document.body.classList.toggle('is-live', live);
+}
+
+async function loadRecords(){
+  if (!API) return;
+  try {
+    const res = await fetch(API.replace(/\/$/, '') + '/records', { headers: { accept: 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data.records) || data.records.length === 0) return; // keep samples
+    records = data.records.map(r => ({
+      id: r.id,
+      claim: r.claim,
+      who: r.claimant,
+      made: [r.made_where, r.made_at].filter(Boolean).join(', '),
+      status: r.status,
+      flip: r.would_change,
+      url: r.made_url,
+      doc: (r.checks || []).length
+        ? r.checks.map(c => `${c.what}\n${c.says}\n${c.url}`).join('\n\n')
+        : 'No corroborating document is on file.\n\nThe original claim is archived at:\n' + r.made_url,
+    }));
+    live = true;
+  } catch (e) {
+    // Offline or API down. Samples stay, banner stays. Nothing is silently faked.
+  }
+}
 
 function renderFeed(){
   const rs = visible();
@@ -313,9 +379,11 @@ function renderFeed(){
       </div>
       <div class="chips">
         <span class="chip st"><i class="dot"></i>${r.status}</span>
-        <span class="chip samp">SAMPLE</span>
+        ${live ? '' : '<span class="chip samp">SAMPLE</span>'}
       </div>
-      <div class="flip"><b>Would change it:</b> ${esc(r.flip)}</div>
+      <div class="flip"><b>Would change it:</b> ${esc(r.flip)}
+        ${r.id ? `<button class="rep" data-report="${r.id}">Report this record</button>` : ''}
+      </div>
     </article>`).join('');
 }
 
@@ -387,20 +455,83 @@ function flash(btn, msg){
 
 // check sheet
 $('#openSheet').addEventListener('click', () => $('#sheet').classList.add('on'));
-$('#cClose').addEventListener('click', () => $('#sheet').classList.remove('on'));
+$('#fClose').addEventListener('click', () => $('#sheet').classList.remove('on'));
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') $('#sheet').classList.remove('on'); });
-$('#cBuild').addEventListener('click', () => {
-  const claim = $('#cClaim').value.trim(), where = $('#cWhere').value.trim();
-  const out = $('#cOut');
-  if (!claim || !where) {
-    out.hidden = false;
-    out.textContent = 'Both fields are required.\n\nA record needs a verbatim claim and an openable link to where it was said. Without the link there is nothing to archive, so there is nothing to check.';
+
+function addSource(){
+  const d = document.createElement('div');
+  d.className = 'src';
+  d.innerHTML = `<button class="rm" type="button">remove</button>
+    <label class="mono">What was checked</label><input class="s-what" placeholder="Delaware filing">
+    <label class="mono">What it says</label><textarea class="s-says" rows="2" placeholder="Incorporation date 2026-01-19"></textarea>
+    <label class="mono">Link</label><input class="s-url" type="url" placeholder="https://...">`;
+  d.querySelector('.rm').addEventListener('click', () => d.remove());
+  $('#fSources').appendChild(d);
+}
+$('#fAddSrc').addEventListener('click', addSource);
+addSource();
+
+$('#fSubmit').addEventListener('click', async () => {
+  const err = $('#fErr'), ok = $('#fOk');
+  err.hidden = true; ok.hidden = true;
+
+  const payload = {
+    claim: $('#fClaim').value,
+    claimant: $('#fWho').value,
+    made_where: $('#fWhere').value,
+    made_url: $('#fUrl').value,
+    status: $('#fStatus').value,
+    would_change: $('#fFlip').value,
+    checks: [...document.querySelectorAll('#fSources .src')].map(d => ({
+      what: d.querySelector('.s-what').value,
+      says: d.querySelector('.s-says').value,
+      url:  d.querySelector('.s-url').value,
+    })).filter(c => c.what || c.says || c.url),
+  };
+
+  if (!API) {
+    err.hidden = false;
+    err.textContent = 'No archive is connected yet, so nothing can be filed. This build runs on sample records.';
     return;
   }
-  const cmd = `/cf-spill "${claim.replace(/"/g, "'")}" ${where}`;
-  out.hidden = false;
-  out.textContent = cmd + '\n\n[copied]';
-  navigator.clipboard?.writeText(cmd);
+
+  $('#fSubmit').disabled = true;
+  try {
+    const res = await fetch(API.replace(/\/$/, '') + '/records', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      // The gate's reason string is shown verbatim. It is written for a person.
+      err.hidden = false;
+      err.textContent = data.error || ('Could not file it (HTTP ' + res.status + ').');
+      return;
+    }
+    ok.hidden = false;
+    ok.textContent = 'Filed.';
+    await loadRecords(); markSampleState(); renderFeed(); renderArchive();
+    setTimeout(() => { $('#sheet').classList.remove('on'); ok.hidden = true; }, 1200);
+  } catch (e) {
+    err.hidden = false;
+    err.textContent = 'Could not reach the archive.';
+  } finally {
+    $('#fSubmit').disabled = false;
+  }
+});
+
+// report
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-report]');
+  if (!btn) return;
+  const reason = prompt('What is wrong with this record?');
+  if (!reason || !reason.trim()) return;
+  if (!API) { flash(btn, 'No archive connected'); return; }
+  try {
+    const res = await fetch(`${API.replace(/\/$/, '')}/records/${btn.dataset.report}/report`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: reason.trim() }),
+    });
+    flash(btn, res.ok ? 'Reported' : 'Could not report');
+  } catch { flash(btn, 'Could not report'); }
 });
 
 // install
@@ -433,7 +564,9 @@ $('#installGo').addEventListener('click', async () => {
 $('#installNo').addEventListener('click', () => { $('#install').classList.remove('on'); dismiss(); });
 addEventListener('appinstalled', () => { $('#install').classList.remove('on'); dismiss(); });
 
-renderFeed(); renderArchive();
+markSampleState(); renderFeed(); renderArchive();
+loadRecords().then(() => { markSampleState(); renderFeed(); renderArchive(); });
+
 if ('serviceWorker' in navigator) {
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   // A new worker taking control means the shell changed under us. Reload once so the
