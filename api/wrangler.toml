@@ -6,7 +6,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "cracked"
-database_id = "PLACEHOLDER"
+database_id = "FILL_AFTER_d1_create"
 
 [vars]
 # Origins allowed to call this API. Comma separated, no trailing slash.
