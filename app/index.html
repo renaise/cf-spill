@@ -18,6 +18,7 @@
     --card:#0e0e0e; --line:#242424;
     --yolk:#F2A900; --ok:#30C860; --red:#FF453A;
     --nav:64px;
+    --sat:env(safe-area-inset-top);
     --top:env(safe-area-inset-top);
     --bot:env(safe-area-inset-bottom);
   }
@@ -39,9 +40,9 @@
     background:var(--yolk);color:#000;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-    text-align:center;padding:5px 12px;padding-top:calc(5px + var(--top));
+    text-align:center;padding:5px 12px;padding-top:calc(5px + var(--sat));
   }
-  body.has-banner{--top:calc(env(safe-area-inset-top) + 20px)}
+  body.has-banner{--top:calc(var(--sat) + 24px)}
 
   /* ---- views ---- */
   main{position:fixed;inset:0}
@@ -160,7 +161,8 @@
   /* ---- archive grid ---- */
   #archive{padding:calc(var(--top) + 54px) 12px calc(var(--nav) + var(--bot) + 24px)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-  .cell{aspect-ratio:9/16;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden}
+  .cell{aspect-ratio:9/16;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden;
+        display:flex;flex-direction:column;align-items:stretch}
   .cell p{font-size:9.5px;line-height:1.32;color:#c2c2c2;overflow:hidden;max-height:74%}
   .cell i{position:absolute;left:9px;bottom:8px;width:6px;height:6px;border-radius:999px}
   .s-SUPPORTED .cell i,.cell.s-SUPPORTED i{background:var(--ok)}

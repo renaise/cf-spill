@@ -11,9 +11,17 @@ no post. Names are optional; the source carries the weight.
 
 ## This repo
 
-A single self-contained `index.html`. No build step, no dependencies, no external
-assets. Every path is relative, so the page renders correctly whether it is served
+`index.html` is the landing page: self-contained, no build step, no dependencies, no
+external assets. Every path is relative, so it renders correctly whether it is served
 from a user path or a bare domain.
+
+`app/` is the product, a single-file PWA on the same terms. It runs on fictional sample
+records until an archive API is configured, and says so in a banner that is only removed
+once real records have actually loaded.
+
+`ios/` is a Capacitor shell around `app/`, so the native build and the web build serve
+the same files. After changing anything in `app/`, run `npx cap sync ios`. See
+TESTFLIGHT.md for what remains before a build can be distributed.
 
 ## Deploying
 

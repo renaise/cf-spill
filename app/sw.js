@@ -7,7 +7,7 @@
 // by name in practice, and they fall back to the network when missing.
 //
 // Bump SHELL whenever the cached asset list changes.
-const SHELL = 'cracked-shell-v2';
+const SHELL = 'cracked-shell-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -3,8 +3,13 @@
 TestFlight will not take a PWA. It distributes signed native binaries only, so the
 web app has to be wrapped in a real iOS app before any of this applies.
 
-Read the three blockers first. Two of them are product work, not paperwork, and one
-of them is the reason to think hard about whether the App Store is wanted at all.
+**The wrapper now exists.** `ios/` is a Capacitor project that builds and runs. What
+remains is an Apple account, signing, and the upload. Steps 2 and 3 below are done;
+start at step 1, then skip to step 4.
+
+The three blockers below gate **external** distribution and the App Store. They do not
+gate internal TestFlight, which takes no Beta App Review (see step 6). So they are not
+a reason to delay getting a build onto your own team's phones.
 
 ---
 
@@ -56,29 +61,45 @@ enrollment publishes under Codex Foundry and requires a D-U-N-S number, which ta
 one to two weeks. **If the entity matters here, and it does, start the D-U-N-S now
 because it is the long pole.**
 
-### 2. Wrap it with Capacitor
+### 2. Wrap it with Capacitor — DONE
+
+`capacitor.config.json` points `webDir` at `app/`, so the native shell serves the same
+files GitHub Pages does. There is no build step and no second copy of the UI. After any
+change to `app/`, run:
 
 ```bash
-cd ~/afxhq/Websites/cf-spill
-npm init -y
-npm i @capacitor/core @capacitor/cli @capacitor/ios
-npx cap init Cracked com.codexfoundry.cracked --web-dir=app
-npx cap add ios
-npx cap sync
-npx cap open ios
+npx cap sync ios
 ```
 
-`--web-dir=app` points Capacitor at the existing PWA directory, so there is no build
-step and no duplicate copy of the UI. The bundle ID `com.codexfoundry.cracked` must
-match what you register in App Store Connect exactly, and it cannot be changed later.
+The bundle ID is `com.codexfoundry.cracked`. It must match the App Store Connect record
+exactly and it cannot be changed later.
 
-### 3. Xcode configuration
-In the opened project, select the target, then Signing & Capabilities. Pick your team
-and let Xcode manage signing. Set the display name to Cracked, set version to 0.1.0 and
-build to 1. Add the icon set from `app/icon-512.png`.
+Capacitor 7 uses Swift Package Manager, so there is no Podfile and no `pod install`.
 
-Set the deployment target to iOS 15 or later. Confirm the status bar is light, since the
-UI is black.
+### 3. Xcode configuration — DONE
+
+Set in `ios/App/App/Info.plist` and the project file, verified by a simulator build:
+
+- Display name Cracked, version 1.0, build 1, deployment target iOS 15.
+- Portrait only on both iPhone and iPad. The feed is a vertical pager; landscape has
+  no design.
+- Light status bar text, set globally rather than per view controller.
+- Launch screen black. The Capacitor default was `systemBackgroundColor`, which
+  flashed white before the shell painted.
+- `arm64` in `UIRequiredDeviceCapabilities`, replacing the template's `armv7`.
+- `ITSAppUsesNonExemptEncryption` false, so uploads stop asking about export
+  compliance.
+- App icon and splash generated at 1024 and 2732 from the Cracked mark.
+
+**What is not done, and only you can do it:** Signing & Capabilities needs your team
+selected. That requires the Apple Developer account from step 1.
+
+To build it yourself:
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer   # once, if needed
+npx cap open ios
+```
 
 ### 4. Create the App Store Connect record
 At appstoreconnect.apple.com, My Apps, new app. Select the same bundle ID. This record
@@ -113,7 +134,12 @@ testers are locked out with no warning.
 ## Order of operations
 
 1. Ship the PWA and get it on your own home screen. Done.
-2. Add the report mechanism and the takedown process. Required for any App Store path.
-3. Build the share extension. It clears Guideline 4.2 and it is the best feature anyway.
-4. Start the D-U-N-S number if the app should belong to Codex Foundry rather than to you.
-5. Only then wrap, archive, and upload.
+2. Wrap it natively so there is something to sign. Done.
+3. Enroll in the Developer Program, and start the D-U-N-S number if the app should
+   belong to Codex Foundry rather than to you. The D-U-N-S is the long pole at one to
+   two weeks, so start it first even though it blocks nothing else here.
+4. Archive and upload to **internal** TestFlight. No review, so this can happen the
+   day the account clears.
+5. Add the report mechanism and a named takedown process. Required before external.
+6. Build the share extension. It clears Guideline 4.2 and it is the best feature anyway.
+7. Only then open external testing.
