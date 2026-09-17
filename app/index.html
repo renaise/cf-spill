@@ -4,269 +4,349 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Spill</title>
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Spill">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" href="./icon-192.png">
 <style>
   :root{
-    --bg:#000; --fg:#fff; --dim:#8a8a8a; --dimmer:#5a5a5a;
-    --card:#0e0e0e; --line:#242424;
-    --yolk:#F2A900; --ok:#30C860; --red:#FF453A;
-    --nav:64px;
-    /* claimed by the install strip; the record rides above it */
-    --strip:0px;
+    /* Ground is paper, not screen. An investor reads this in daylight, on a
+       phone, before a meeting -- that scene forces light. */
+    --paper:#ffffff;
+    --raise:#fafafa;
+    --ink:#0d0d0d;
+    --ink-2:#5d5d5d;
+    --ink-3:#8f8f8f;
+    --rule:#e6e6e6;
+    --rule-2:#f1f1f1;
+
+    /* Colour is reserved. Four states, one hue each, and nothing else on the
+       surface is allowed a hue at all. */
+    --ok:#0f7a43;        /* SUPPORTED   -- a document corroborates */
+    --against:#a84a06;   /* CONTRADICTED-- a document says otherwise */
+    --none:#0d0d0d;      /* UNSUPPORTED -- drawn in full ink, never dimmed */
+    --moot:#8f8f8f;      /* UNCHECKABLE -- no document could settle it */
+
+    --nav:60px;
     --sat:env(safe-area-inset-top);
     --top:env(safe-area-inset-top);
     --bot:env(safe-area-inset-bottom);
+    --strip:0px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   [hidden]{display:none!important}
   html,body{height:100%;overscroll-behavior:none}
   body{
-    background:var(--bg);color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased;
-    overflow:hidden;
+    background:var(--paper);color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
+    letter-spacing:-.006em;overflow:hidden;
   }
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase}
+  .mono{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.1em;text-transform:uppercase;
+  }
 
   /* ---- sample banner: required, never removable while samples are showing ---- */
   #sample{
     position:fixed;top:0;left:0;right:0;z-index:60;
-    background:var(--yolk);color:#000;
+    background:var(--ink);color:var(--paper);
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-    text-align:center;padding:5px 12px;padding-top:calc(5px + var(--sat));
+    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    text-align:center;padding:6px 12px;padding-top:calc(6px + var(--sat));
   }
-  body.has-banner{--top:calc(var(--sat) + 24px)}
-  /* a fallback only; showInstall() measures the strip and overrides this */
-  body.has-install{--strip:58px}
+  body.has-banner{--top:calc(var(--sat) + 25px)}
 
   /* ---- views ---- */
   main{position:fixed;inset:0}
   .view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
   .view.on{display:block}
 
-  /* ---- header: wordmark and the rules ---- */
+  /* ---- header ---- */
   #top{
     position:fixed;left:0;right:0;top:0;z-index:25;
-    padding:calc(var(--top) + 6px) 14px 0;
-    display:flex;align-items:center;height:calc(var(--top) + 44px);
-    background:var(--bg);
+    padding:calc(var(--top) + 8px) 18px 0;
+    display:flex;align-items:center;height:calc(var(--top) + 46px);
+    background:var(--paper);
   }
-  #selName{font-size:16px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
-  #top .ico{margin-left:auto;width:34px;height:34px;display:grid;place-items:center}
-  #top .ico svg{width:22px;height:22px;stroke:#fff;stroke-width:1.8;fill:none}
-  body.detail #top{justify-content:center}
-  body.detail #selName{margin:0 auto;font-size:13px;letter-spacing:.14em;color:var(--dim)}
+  #selName{font-size:15px;font-weight:600;letter-spacing:.015em}
+  #top .ico{margin-left:auto;width:32px;height:32px;display:grid;place-items:center;color:var(--ink-2)}
+  #top .ico svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.5;fill:none}
+  body.detail #selName{margin:0 auto;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;font-weight:500;color:var(--ink-3)}
   body.detail #top .ico{display:none}
 
-  /* ---- filter chips: Reddit's category rail, one row, scrolls sideways ---- */
+  /* ---- filter row ---- */
   #chips{
     position:fixed;left:0;right:0;z-index:24;
-    top:calc(var(--top) + 44px);
-    display:flex;gap:7px;padding:0 14px 10px;
+    top:calc(var(--top) + 46px);
+    display:flex;gap:6px;padding:0 18px 12px;
     overflow-x:auto;scrollbar-width:none;
-    background:var(--bg);border-bottom:1px solid var(--line);
+    background:var(--paper);border-bottom:1px solid var(--rule);
   }
   #chips::-webkit-scrollbar{display:none}
   #chips button{
-    flex:none;display:inline-flex;align-items:center;gap:6px;
-    height:30px;padding:0 13px;border-radius:999px;
-    border:1px solid var(--line);color:var(--dim);
-    font-size:13px;font-weight:500;white-space:nowrap;
+    flex:none;display:inline-flex;align-items:center;gap:7px;
+    height:29px;padding:0 12px;border-radius:999px;
+    border:1px solid var(--rule);color:var(--ink-2);
+    font-size:13px;font-weight:450;white-space:nowrap;
   }
-  #chips button[aria-selected="true"]{background:var(--fg);color:#000;border-color:var(--fg)}
-  #chips button i{width:7px;height:7px;border-radius:999px;flex:none}
+  #chips button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
-  /* ---- the forum list ---- */
-  #feed{padding:calc(var(--top) + 96px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 16px)}
+  /* ---- the mark that carries state ----
+     A filled square means a document is on file. A hollow ring means none was
+     found. Absence is drawn as deliberately as presence, because UNSUPPORTED is
+     the honest default and most records will carry it -- dimming it would tell
+     the reader it mattered less than the others. */
+  .mk{width:8px;height:8px;flex:none;display:inline-block}
+  .mk.fill{background:currentColor}
+  .mk.ring{border:1.5px solid currentColor;border-radius:999px;background:none}
+
+  /* Colour is carried by a field, not scattered as an accent. */
+  .tag{
+    display:inline-flex;align-items:center;gap:7px;height:23px;padding:0 9px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    background:var(--raise);color:var(--ink-2);border:1px solid var(--rule);
+  }
+  .tag.samp{background:none;border:1px dashed var(--ink-3);color:var(--ink-3)}
+  .s-SUPPORTED    .tag.st{color:var(--ok);      background:#f1f8f3;border-color:#cfe6d8}
+  .s-CONTRADICTED .tag.st{color:var(--against); background:#fdf4ed;border-color:#f0dcc9}
+  .s-UNSUPPORTED  .tag.st{color:var(--none);    background:var(--raise);border-color:var(--rule)}
+  .s-UNCHECKABLE  .tag.st{color:var(--moot);    background:var(--raise);border-color:var(--rule)}
+
+  /* ---- the list ---- */
+  #feed{padding:calc(var(--top) + 100px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 16px)}
   .post{
     display:block;width:100%;text-align:left;
-    padding:15px 16px 13px;
-    border-bottom:1px solid var(--line);
+    padding:20px 18px 17px;border-bottom:1px solid var(--rule);
   }
-  .post:active{background:#0b0b0b}
-  .phead{display:flex;align-items:center;gap:9px;margin-bottom:9px}
-  .phead .av{width:26px;height:26px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
-  .phead .av svg{width:15px;height:15px}
-  .phead .nm{font-size:13px;font-weight:600;letter-spacing:-.005em;min-width:0;
-             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .phead .tm{font-size:12px;color:var(--dim);flex:none;margin-left:auto;padding-left:8px}
-  .ptitle{font-size:17px;line-height:1.28;font-weight:600;letter-spacing:-.018em;margin-bottom:9px}
-  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
-  .tag{
-    display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:5px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.1em;
-    background:rgba(255,255,255,.07);color:var(--dim);
+  .post:active{background:var(--raise)}
+  .phead{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+  .phead .nm{
+    font-size:12.5px;font-weight:500;color:var(--ink-2);min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .tag i{width:6px;height:6px;border-radius:999px;flex:none}
-  .tag.samp{background:none;border:1px dashed var(--dimmer);color:var(--dimmer)}
-  .s-SUPPORTED   .tag.st{color:var(--ok)}    .s-SUPPORTED   .tag.st i{background:var(--ok)}
-  .s-CONTRADICTED .tag.st{color:var(--yolk)} .s-CONTRADICTED .tag.st i{background:var(--yolk)}
-  .s-UNSUPPORTED .tag.st{color:var(--dim)}   .s-UNSUPPORTED .tag.st i{background:var(--dim)}
-  .s-UNCHECKABLE .tag.st{color:var(--dimmer)}.s-UNCHECKABLE .tag.st i{background:var(--dimmer)}
+  .phead .tm{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11px;color:var(--ink-3);flex:none;margin-left:auto;padding-left:10px;
+  }
+  .ptitle{
+    display:block;width:100%;text-align:left;
+    font-size:20px;line-height:1.24;font-weight:500;letter-spacing:-.021em;
+    margin-bottom:12px;
+  }
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
   .pbody{
-    font-size:13.5px;line-height:1.45;color:#a8a8a8;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11.5px;line-height:1.55;color:var(--ink-2);
+    background:var(--raise);border:1px solid var(--rule-2);padding:11px 12px;
+    white-space:pre-wrap;
+    /* border-box, so the block's own 22px of padding is inside this number */
+    max-height:calc(1.55em * 3 + 22px);overflow:hidden;
   }
-  /* Reddit's action row, with the vote column removed. Spill does not rank
-     records, so the only number here is a count of documents, which is a fact
-     about the record rather than a verdict on it. */
-  .pacts{display:flex;align-items:center;gap:6px;margin-top:11px}
-  .pacts button,.pacts .src{
-    display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;
-    border-radius:999px;background:rgba(255,255,255,.06);
-    font-size:12.5px;color:var(--dim);
+  /* No vote column. Spill does not rank records, so the only number here counts
+     documents, which is a fact about the record and not a verdict on it. */
+  .pacts{display:flex;align-items:center;gap:16px;margin-top:13px}
+  .pacts button{
+    display:inline-flex;align-items:center;gap:7px;height:26px;
+    font-size:12.5px;color:var(--ink-2);
   }
-  .pacts svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none}
+  .pacts svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none}
   .pacts .grow{margin-left:auto}
 
-  /* ---- one record, opened ---- */
-  #detail{padding:calc(var(--top) + 54px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 28px)}
-  #detail .lbl{font-size:10px;color:var(--dim);margin-bottom:10px}
-  #detail .claimtext{font-size:clamp(23px,6.4vw,30px);line-height:1.18;font-weight:600;letter-spacing:-.028em}
-  #detail .meta{margin-top:14px;font-size:13px;color:var(--dim);line-height:1.5}
+  /* ---- one record ---- */
+  #detail{padding:calc(var(--top) + 60px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 32px)}
+  #detail .lbl{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:12px;
+  }
+  #detail .claimtext{
+    font-size:clamp(25px,7vw,33px);line-height:1.16;font-weight:500;letter-spacing:-.028em;
+  }
+  #detail .meta{margin-top:16px;font-size:13px;color:var(--ink-2);line-height:1.5}
   #detail .doc{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:12px;line-height:1.62;color:#d6d6d6;white-space:pre-wrap;
+    font-size:11.5px;line-height:1.62;color:var(--ink);white-space:pre-wrap;
+    background:var(--raise);border:1px solid var(--rule);padding:15px 14px;
   }
-  #detail .sec{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
-  #detail .flip{font-size:13.5px;color:#cfcfcf;line-height:1.5}
+  #detail .sec{margin-top:30px;padding-top:22px;border-top:1px solid var(--rule)}
+  #detail .flip{font-size:14px;color:var(--ink-2);line-height:1.55}
   #back{
-    position:fixed;z-index:26;left:10px;top:calc(var(--top) + 6px);
-    width:34px;height:34px;display:none;place-items:center;
+    position:fixed;z-index:26;left:12px;top:calc(var(--top) + 8px);
+    width:32px;height:32px;display:none;place-items:center;
   }
   #back.on{display:grid}
-  #back svg{width:22px;height:22px;stroke:#fff;stroke-width:1.9;fill:none}
+  #back svg{width:20px;height:20px;stroke:var(--ink);stroke-width:1.6;fill:none}
 
-  /* ---- empty state ---- */
-  .empty{padding:60px 20px;text-align:left}
-  .empty .lbl{font-size:10px;color:var(--dim);margin-bottom:12px}
-  .empty h3{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
-  .empty p{margin-top:12px;font-size:14px;color:var(--dim);line-height:1.5;max-width:32ch}
+  /* ---- empty ---- */
+  .empty{padding:56px 18px;text-align:left}
+  .empty .lbl{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:14px;
+  }
+  .empty h3{font-size:24px;font-weight:500;letter-spacing:-.024em;line-height:1.2}
+  .empty p{margin-top:13px;font-size:14px;color:var(--ink-2);line-height:1.55;max-width:32ch}
 
-  /* ---- archive: the same records, dense ---- */
-  #archive{padding:calc(var(--top) + 54px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
-  .ghead{padding:0 16px 12px;color:var(--dim);font-size:11px}
+  /* ---- archive ---- */
+  #archive{padding:calc(var(--top) + 58px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
+  .ghead{
+    padding:0 18px 14px;color:var(--ink-3);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  }
   .arow{
-    display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
-    padding:13px 16px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+    padding:15px 18px;border-top:1px solid var(--rule);
   }
-  .arow i{width:7px;height:7px;border-radius:999px;flex:none;margin-top:5px}
-  .arow .t{font-size:14px;line-height:1.35;overflow:hidden;display:-webkit-box;
-           -webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .arow .w{font-size:12px;color:var(--dim);margin-top:3px}
-  .s-SUPPORTED   .arow i,.arow.s-SUPPORTED i{background:var(--ok)}
-  .s-CONTRADICTED .arow i,.arow.s-CONTRADICTED i{background:var(--yolk)}
-  .s-UNSUPPORTED .arow i,.arow.s-UNSUPPORTED i{background:var(--dim)}
-  .s-UNCHECKABLE .arow i,.arow.s-UNCHECKABLE i{background:var(--dimmer)}
+  .arow .mk{margin-top:5px}
+  .arow .t{font-size:14.5px;line-height:1.35;letter-spacing:-.012em;
+           overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .arow .w{font-size:12px;color:var(--ink-3);margin-top:4px}
+  .s-SUPPORTED .mk,.arow.s-SUPPORTED .mk{color:var(--ok)}
+  .s-CONTRADICTED .mk,.arow.s-CONTRADICTED .mk{color:var(--against)}
+  .s-UNSUPPORTED .mk,.arow.s-UNSUPPORTED .mk{color:var(--none)}
+  .s-UNCHECKABLE .mk,.arow.s-UNCHECKABLE .mk{color:var(--moot)}
 
-  /* ---- about ---- */
-  #about{padding:calc(var(--top) + 54px) 20px calc(var(--nav) + var(--bot) + 28px)}
-  #about h2{font-size:21px;font-weight:600;letter-spacing:-.02em;margin:26px 0 9px}
+  /* ---- rules ---- */
+  #about{padding:calc(var(--top) + 58px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 40px);
+         max-width:36rem}
+  #about h2{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--ink-3);margin:32px 0 12px}
   #about h2:first-child{margin-top:0}
-  #about p{color:#bdbdbd;margin-bottom:11px;max-width:60ch}
-  #about .k{display:flex;gap:9px;align-items:baseline;margin-bottom:9px}
-  #about .k .sv{flex:none;width:112px}
-  #about .k span{color:#bdbdbd;font-size:13px}
+  #about p{font-size:15px;line-height:1.6;color:var(--ink-2);margin-bottom:13px}
+  #about .k{display:grid;grid-template-columns:auto 1fr;gap:10px 13px;align-items:baseline;
+            padding:13px 0;border-top:1px solid var(--rule)}
+  #about .sv{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+             letter-spacing:.1em;white-space:nowrap}
+  #about .k span:last-child{font-size:14px;color:var(--ink-2);line-height:1.5}
 
-  /* ---- screen title for non-feed views ---- */
+  /* ---- screen title ---- */
   #vtitle{
-    position:fixed;left:0;right:0;top:0;z-index:24;display:none;
-    padding:calc(var(--top) + 12px) 16px 10px;
-    font-size:16px;font-weight:600;text-align:center;
-    background:linear-gradient(#000 62%,rgba(0,0,0,0));
+    position:fixed;left:0;right:0;top:0;z-index:25;display:none;
+    padding:calc(var(--top) + 8px) 18px 0;height:calc(var(--top) + 46px);
+    align-items:center;background:var(--paper);
+    font-size:15px;font-weight:600;letter-spacing:.015em;
   }
-  #vtitle.on{display:block}
+  #vtitle.on{display:flex}
 
-  /* ---- bottom sheets ---- */
-  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:40;align-items:flex-end}
-  .scrim.on{display:flex}
+  /* ---- sheets ---- */
+  .scrim{position:fixed;inset:0;z-index:50;background:rgba(13,13,13,.32);display:none}
+  .scrim.on{display:block}
   .sheet{
-    width:100%;background:#1c1c1c;
-    border-radius:20px 20px 0 0;
-    padding:8px 10px calc(14px + var(--bot));
+    position:absolute;left:0;right:0;bottom:0;background:var(--paper);
+    border-radius:16px 16px 0 0;padding:10px 18px calc(24px + var(--bot));
     max-height:88%;overflow-y:auto;
   }
-  .sheet .handle{width:36px;height:4px;border-radius:999px;background:#4a4a4a;margin:0 auto 12px}
-  .sheet .grp{background:#2a2a2a;border-radius:14px;overflow:hidden;margin-bottom:9px}
-  .sheet .grp button{
-    display:flex;align-items:center;gap:13px;width:100%;
-    padding:14px 15px;font-size:15.5px;text-align:left;
-  }
-  .sheet .grp button+button{border-top:1px solid #383838}
-  .sheet .grp button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;flex:none}
-  .sheet .grp button.danger{color:var(--red)}
+  .handle{width:34px;height:4px;border-radius:999px;background:var(--rule);margin:0 auto 16px}
+  .grp{border-top:1px solid var(--rule);padding:4px 0}
+  .grp:first-of-type{border-top:0}
+  .grp button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 2px;
+              font-size:15px;text-align:left}
+  .grp button svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.6;fill:none;flex:none}
+  .grp button.danger{color:var(--against)}
 
-  /* ---- file sheet (form) ---- */
-  #sheet .sheet{background:#141414;padding:8px 18px calc(22px + var(--bot))}
-  #sheet h3{font-size:19px;font-weight:600;margin-bottom:5px}
-  #sheet .intro{color:var(--dim);font-size:13px;margin-bottom:16px}
-  #sheet label{display:block;font-size:10px;color:var(--dim);margin-bottom:6px}
-  #sheet textarea,#sheet input,#sheet select{
-    width:100%;background:#000;border:1px solid var(--line);color:#fff;
-    padding:11px;font:inherit;font-size:15px;margin-bottom:13px;resize:vertical;border-radius:9px;
+  /* ---- file form ---- */
+  .sheet h3{font-size:21px;font-weight:500;letter-spacing:-.022em;margin-bottom:8px}
+  .sheet .intro{font-size:14px;color:var(--ink-2);line-height:1.55;margin-bottom:22px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+               font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+               color:var(--ink-3);margin-bottom:7px}
+  .field input,.field textarea,.field select{
+    width:100%;background:var(--paper);color:var(--ink);
+    border:1px solid var(--rule);padding:11px 12px;font:inherit;font-size:15px;
+    border-radius:6px;
   }
-  #sheet textarea:focus,#sheet input:focus{outline:none;border-color:var(--yolk)}
-  .row{display:flex;gap:9px}
-  .btn{height:44px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;
-       font-size:14.5px;font-weight:600;border:1px solid var(--line);border-radius:999px}
-  .btn.pri{background:#fff;color:#000;border-color:#fff;flex:1}
-  .field{margin-bottom:12px}
-  .src{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:10px}
-  .src .rm{float:right;color:var(--dim);font-size:11px}
-  .err{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
-  .okmsg{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
+  .field input:focus,.field textarea:focus,.field select:focus{
+    outline:none;border-color:var(--ink);
+  }
+  .field textarea{resize:vertical;line-height:1.45}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 18px;
+    border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink);
+    font-size:14px;font-weight:500;
+  }
+  .btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .row{display:flex;gap:9px;margin-top:6px}
+  .row .btn{flex:1}
+  .err{margin-top:14px;padding:13px;border:1px solid #f0dcc9;background:#fdf4ed;
+       color:var(--against);font-size:13.5px;line-height:1.5;border-radius:6px}
+  .okmsg{margin-top:14px;padding:13px;border:1px solid #cfe6d8;background:#f1f8f3;
+         color:var(--ok);font-size:13.5px;border-radius:6px}
+  #fSources .src{border:1px solid var(--rule);padding:12px;margin-bottom:9px;border-radius:6px}
+  #fSources .rm{font-size:12.5px;color:var(--ink-3);margin-top:4px}
 
   /* ---- toast ---- */
   #toast{
     position:fixed;z-index:70;left:14px;right:14px;
     bottom:calc(var(--nav) + var(--bot) + var(--strip) + 14px);
-    background:#1c1c1c;border-radius:999px;padding:10px 14px;
-    display:none;align-items:center;gap:9px;font-size:13.5px;
-    box-shadow:0 8px 28px rgba(0,0,0,.5);
+    background:var(--ink);color:var(--paper);border-radius:10px;padding:13px 15px;
+    display:none;align-items:center;gap:11px;font-size:13.5px;line-height:1.35;
   }
   #toast.on{display:flex}
-  #toast .x{width:22px;height:22px;flex:none;border-radius:999px;background:#3a3a3a;display:grid;place-items:center}
-  #toast .x svg{width:11px;height:11px;stroke:#bbb;stroke-width:2.6;fill:none}
+  #toast .x{width:20px;height:20px;flex:none;border-radius:999px;background:rgba(255,255,255,.16);
+            display:grid;place-items:center}
+  #toast .x svg{width:10px;height:10px;stroke:#fff;stroke-width:2.4;fill:none}
 
-  /* ---- bottom nav: 5 slots, centre compose ---- */
+  /* ---- nav ---- */
   nav{
     position:fixed;left:0;right:0;bottom:0;z-index:30;
     height:calc(var(--nav) + var(--bot));padding-bottom:var(--bot);
     display:flex;align-items:center;justify-content:space-around;
-    background:rgba(0,0,0,.86);backdrop-filter:blur(18px);
-    border-top:1px solid #1a1a1a;
+    background:var(--paper);border-top:1px solid var(--rule);
   }
-  nav button{width:54px;height:46px;display:grid;place-items:center;color:var(--dimmer)}
-  nav button[aria-selected="true"]{color:var(--fg)}
-  nav button svg{width:25px;height:25px;stroke:currentColor;stroke-width:1.75;fill:none}
-  nav .compose{
-    width:44px;height:44px;background:#fff;color:#000;border-radius:999px;
-  }
-  nav .compose svg{width:22px;height:22px;stroke:#000;stroke-width:2.4}
-  nav .me{width:27px;height:27px;border-radius:999px;background:#2a2a2a;display:grid;place-items:center}
-  nav .me svg{width:15px;height:15px}
-  nav button[aria-selected="true"] .me{box-shadow:0 0 0 2px #fff}
+  nav button{width:52px;height:44px;display:grid;place-items:center;color:var(--ink-3)}
+  nav button[aria-selected="true"]{color:var(--ink)}
+  nav button svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.6;fill:none}
+  nav .compose{width:38px;height:38px;background:var(--ink);color:var(--paper);border-radius:999px}
+  nav .compose svg{width:19px;height:19px;stroke:var(--paper);stroke-width:2}
+  nav .me{width:24px;height:24px;border-radius:999px;border:1px solid currentColor;
+          display:grid;place-items:center}
+  nav .me svg{width:13px;height:13px}
 
+  /* ---- install ---- */
   #install{
     display:none;position:fixed;left:14px;right:14px;z-index:35;
     bottom:calc(var(--nav) + var(--bot) + 8px);
-    background:#fff;color:#000;padding:8px 9px 8px 14px;border-radius:999px;
+    background:var(--ink);color:var(--paper);
+    padding:8px 9px 8px 15px;border-radius:999px;
     align-items:center;gap:9px;font-size:13px;line-height:1.25;
   }
   #install.on{display:flex}
-  #install .btn{height:32px;background:#000;color:#fff;border-color:#000;font-size:12px}
+  #install .btn{height:30px;background:var(--paper);color:var(--ink);border-color:var(--paper);font-size:12.5px}
+  #install .btn.ghost{background:none;color:var(--paper);border-color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body class="has-banner">
+<!--
+THESIS: A record of claims that refuses to rank them. It declines the dark,
+high-density "intelligence terminal" every diligence tool ships, and reads as a
+document instead of a dashboard.
+OWN-WORLD: Paper white, near-black ink, hairline rules at #e6e6e6, one neutral
+grotesk, monospace reserved for documents and labels. Four reserved hues, one
+per status, each carried by a bordered field rather than a scattered accent.
+A filled square means a document is on file; a hollow ring means none was found.
+STORY: An investor arrives with one claim in mind, sees what the record says
+about it in a second, opens the document, and leaves knowing whether to ask.
+FIRST VIEWPORT: Wordmark, filter row, then the claim itself at 20px as the
+loudest thing on screen, its status field beneath it, the source document in a
+mono block under that.
+FORM: Brief-pinned world (Codex / OpenAI marketing), which beats the roll.
+Raised by two declined challengers: seven-segment donates "absence is drawn as
+deliberately as light" (UNSUPPORTED renders in full ink, never dimmed); the
+glazier partition donates "colour reserved, carried by a field". Seed e2f5b73e.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the
+finish review, the verdict, DESIGN.md, and every shipping raster carrying its
+provenance.
+-->
 
 <div id="sample">Sample records · fictional people and companies</div>
 
@@ -296,9 +376,9 @@
     <h2>Status</h2>
     <p>Status describes the claim against the documents. It never describes the person.</p>
     <div class="k"><span class="sv" style="color:var(--ok)">SUPPORTED</span><span>A document corroborates the claim.</span></div>
-    <div class="k"><span class="sv" style="color:var(--dim)">UNSUPPORTED</span><span>No document found either way. The honest default, and not an accusation.</span></div>
-    <div class="k"><span class="sv" style="color:var(--yolk)">CONTRADICTED</span><span>A named document states something incompatible.</span></div>
-    <div class="k"><span class="sv" style="color:var(--dimmer)">UNCHECKABLE</span><span>No public document could settle it.</span></div>
+    <div class="k"><span class="sv" style="color:var(--none)">UNSUPPORTED</span><span>No document found either way. The honest default, and not an accusation.</span></div>
+    <div class="k"><span class="sv" style="color:var(--against)">CONTRADICTED</span><span>A named document states something incompatible.</span></div>
+    <div class="k"><span class="sv" style="color:var(--moot)">UNCHECKABLE</span><span>No public document could settle it.</span></div>
     <h2>Why there are no counts</h2>
     <p>No likes, no scores, no ranking, no trending. A record either has a source or it does not, and a crowd cannot vote a document into existence. Ranking claims by popularity would also make this a publisher rather than a record.</p>
     <h2>What is not here</h2>
@@ -367,7 +447,7 @@
 <div id="install">
   <span id="installMsg" style="flex:1">Add Spill to your home screen</span>
   <button class="btn" id="installGo">Install</button>
-  <button class="btn" id="installNo" style="background:none;color:#000;border-color:#ccc">Later</button>
+  <button class="btn ghost" id="installNo">Later</button>
 </div>
 
 <nav>
@@ -409,7 +489,7 @@ const SAMPLES = [
     claim: "Team of 40 engineers shipping every day.",
     who: "Perrin Oyelaran, cofounder, Havenline", made: "Podcast, 2026-07-02",
     status: "UNSUPPORTED",
-    doc: "ARCHIVED TEAM PAGE\nhavenline.example · snapshot 2026-06-28\n  Named staff listed ......... 9\n\nLIVE JOB POSTINGS · 2026-07-02\n  Open engineering roles ..... 3\n\nNo public document states a headcount either way.",
+    doc: "ARCHIVED TEAM PAGE\nhavenline.example · snapshot 2026-06-28\n  Named staff listed ......... 9\n\nLIVE JOB POSTINGS · 2026-07-02\n  Open engineering roles ..... 3\n\nNo public document states a headcount\neither way.",
     flip: "A company org chart, a payroll summary, or a staff page listing 40 engineers."
   },
   {
@@ -425,8 +505,37 @@ const SAMPLES = [
     status: "UNCHECKABLE",
     doc: "No public document exists.\n\nThe benchmark is described as internal.\nNo methodology, dataset, or result\ntable has been published, and no third\nparty has reproduced it.\n\nUNCHECKABLE is not a judgment. It is a\nstatement about what is on the record.",
     flip: "Publication of the benchmark methodology and results, or a third-party reproduction."
+  },
+  {
+    claim: "Profitable since month nine, no outside capital.",
+    who: "Wren Adeyemi, founder, Saltpath", made: "Investor update, 2026-08-30",
+    status: "CONTRADICTED",
+    doc: "FORM D (SEC) · filed 2026-04-17\nSaltpath Systems Inc.\n\nTotal offering amount ...... $6,000,000\nTotal amount sold .......... $4,750,000\nMinimum investment ......... $250,000\n\nThe filing postdates month nine and\nrecords capital raised from outside\ninvestors. It says nothing about\nprofitability either way.",
+    flip: "An income statement covering the period, or a withdrawal of the no-capital half of the claim."
+  },
+  {
+    claim: "Three of the five largest US health systems are customers.",
+    who: "Callum Bright, CEO, Meridian Health AI", made: "Sales deck, 2026-06-19",
+    status: "UNSUPPORTED",
+    doc: "PRESS RELEASES · meridianhealth.example\n  Named health-system customers ... 0\n\nPUBLIC PROCUREMENT RECORDS\n  Matching awarded contracts ...... 0\n\nCustomer relationships are routinely\nconfidential, so an absence here is\nweak evidence in either direction.",
+    flip: "A named reference customer, a signed contract, or a procurement record."
+  },
+  {
+    claim: "We were the first to ship this on-device.",
+    who: "Sunniva Holt, cofounder, Parseq", made: "Launch thread, 2026-09-08",
+    status: "CONTRADICTED",
+    doc: "ARCHIVED RELEASE NOTES\nterrafirma.example/changelog\n  Same capability, on-device ... 2026-05-04\n\nParseq launch date ............. 2026-09-08\n\nA prior public release of the same\ncapability predates the claim by four\nmonths.",
+    flip: "Evidence of an earlier Parseq release, or a narrower reading of \"this\" that the prior release does not meet."
+  },
+  {
+    claim: "Our retention is best in category.",
+    who: "Oz Farrow, founder, Lanternside", made: "Fundraise memo, 2026-07-25",
+    status: "UNCHECKABLE",
+    doc: "No public document exists.\n\n\"Best in category\" requires both a\ndefined category and published\nretention figures for its members.\nNeither is on the public record.\n\nThe claim cannot be checked, which is\nnot the same as it being false.",
+    flip: "A defined peer set with published retention figures, or a third-party category benchmark."
   }
 ];
+
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -434,10 +543,10 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const FEEDS = [
   { id:'all',            name:'All' },
   { id:'open',           name:'Unchecked' },
-  { id:'CONTRADICTED',   name:'Contradicted', dot:'var(--yolk)' },
-  { id:'SUPPORTED',      name:'Supported',    dot:'var(--ok)' },
-  { id:'UNSUPPORTED',    name:'Unsupported',  dot:'var(--dim)' },
-  { id:'UNCHECKABLE',    name:'Uncheckable',  dot:'var(--dimmer)' },
+  { id:'CONTRADICTED',   name:'Contradicted' },
+  { id:'SUPPORTED',      name:'Supported' },
+  { id:'UNSUPPORTED',    name:'Unsupported' },
+  { id:'UNCHECKABLE',    name:'Uncheckable' },
 ];
 let feedId = 'all';
 
@@ -486,10 +595,6 @@ async function loadRecords(){
   }
 }
 
-const MARK = `<svg viewBox="0 0 100 100" aria-hidden="true">
-  <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z" fill="none" stroke="#fff" stroke-width="8"/>
-  <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="8"/>
-</svg>`;
 
 const ICON = {
   doc:  '<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>',
@@ -497,6 +602,13 @@ const ICON = {
   share:'<svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-7 18-3.5-7.5L3 10z"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9" fill="currentColor"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><circle cx="19" cy="12" r=".9" fill="currentColor"/></svg>',
 };
+
+// A filled square means a document is on file. A hollow ring means none was
+// found. Both are drawn; neither is dimmed.
+const HAS_DOC = { SUPPORTED:1, CONTRADICTED:1 };
+function mark(status){
+  return `<span class="mk ${HAS_DOC[status] ? 'fill' : 'ring'}"></span>`;
+}
 
 function sourceLine(r){
   const n = r.sources === undefined ? (r.doc ? 1 : 0) : r.sources;
@@ -506,9 +618,7 @@ function sourceLine(r){
 
 function renderChips(){
   $('#chips').innerHTML = FEEDS.map(f => `
-    <button data-feed="${f.id}" aria-selected="${f.id === feedId}">
-      ${f.dot ? `<i style="background:${f.dot}"></i>` : ''}${f.name}
-    </button>`).join('');
+    <button data-feed="${f.id}" aria-selected="${f.id === feedId}">${f.name}</button>`).join('');
 }
 
 function emptyBlock(){
@@ -526,13 +636,12 @@ function renderFeed(){
   $('#feed').innerHTML = rs.map((r, i) => `
     <article class="post s-${r.status}" data-i="${i}">
       <div class="phead">
-        <span class="av">${MARK}</span>
         <span class="nm">${esc(r.who)}</span>
         <span class="tm">${esc((r.made || '').split(', ').pop())}</span>
       </div>
-      <button class="ptitle" data-open style="display:block;width:100%;text-align:left">${esc(r.claim)}</button>
+      <button class="ptitle" data-open>${esc(r.claim)}</button>
       <div class="tags">
-        <span class="tag st"><i></i>${esc(r.status)}</span>
+        <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
         ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
       </div>
       <div class="pbody">${esc(r.doc)}</div>
@@ -551,8 +660,8 @@ function renderDetail(r){
       <div class="lbl mono">The claim</div>
       <div class="claimtext">${esc(r.claim)}</div>
       <div class="meta">${esc(r.who)}<br>${esc(r.made)}</div>
-      <div class="tags" style="margin-top:14px">
-        <span class="tag st"><i></i>${esc(r.status)}</span>
+      <div class="tags" style="margin-top:18px">
+        <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
         ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
       </div>
       <div class="sec">
@@ -576,7 +685,7 @@ function renderArchive(){
   $('#archive').innerHTML = `<div class="ghead mono">${head}</div>` +
     (rs.length
       ? rs.map((r, i) => `<button class="arow s-${r.status}" data-jump="${i}">
-           <i></i><span><span class="t">${esc(r.claim)}</span>
+           ${mark(r.status)}<span><span class="t">${esc(r.claim)}</span>
            <span class="w">${esc(r.who)}</span></span></button>`).join('')
       : '');
 }

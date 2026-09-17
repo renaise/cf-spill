@@ -4,157 +4,301 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spill</title>
-<meta name="description" content="Founder claims, and the receipts that check them. A public record instead of a group chat.">
+<meta name="description" content="Founder claims, and the documents that check them. A public record instead of a group chat.">
 <meta property="og:title" content="Spill">
-<meta property="og:description" content="Founder claims, and the receipts that check them. A public record instead of a group chat.">
+<meta property="og:description" content="Founder claims, and the documents that check them. A public record instead of a group chat.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z' fill='none' stroke='%23111' stroke-width='7'/><path d='M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53' fill='none' stroke='%23F2A900' stroke-width='7' stroke-linejoin='miter'/></svg>">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23fff'/><rect x='6' y='9' width='9' height='9' fill='%230d0d0d'/><circle cx='22.5' cy='13.5' r='3.75' fill='none' stroke='%230d0d0d' stroke-width='1.6'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap">
 <style>
   :root{
-    --ink:#111111;
-    --ink-2:#5a5a5a;
-    --ground:#ffffff;
-    --yolk:#F2A900;
-    --rule:#e2e2e2;
+    --paper:#ffffff;
+    --raise:#fafafa;
+    --ink:#0d0d0d;
+    --ink-2:#5d5d5d;
+    --ink-3:#8f8f8f;
+    --rule:#e6e6e6;
+    --rule-2:#f1f1f1;
+    --ok:#0f7a43;
+    --against:#a84a06;
+    --none:#0d0d0d;
+    --moot:#8f8f8f;
+    --gut:24px;
+    --max:1120px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   body{
-    background:var(--ground);
-    color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    font-size:17px;
-    line-height:1.45;
+    background:var(--paper);color:var(--ink);
+    font-family:Archivo,"Helvetica Neue",Helvetica,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+    font-size:17px;line-height:1.5;letter-spacing:-.008em;
     -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
   }
-  .wrap{
-    flex:1 0 auto;
-    width:100%;
-    max-width:880px;
-    padding:clamp(28px,7vh,72px) 24px 0;
-  }
-  header{display:flex;align-items:center;gap:14px;margin-bottom:clamp(48px,10vh,110px)}
-  .mark{width:34px;height:34px;flex:none;display:block}
-  .wordmark{
-    font-size:19px;
-    font-weight:600;
-    letter-spacing:0.14em;
-    text-transform:uppercase;
-  }
-  h1{
-    font-size:clamp(34px,7.2vw,64px);
-    line-height:1.08;
-    font-weight:600;
-    letter-spacing:-0.028em;
-    max-width:19ch;
-    text-wrap:balance;
-    margin-bottom:clamp(28px,5vh,44px);
-  }
-  h1 .y{color:var(--yolk)}
-  .body p{
-    max-width:56ch;
-    margin-bottom:20px;
-    color:var(--ink-2);
-    font-size:clamp(16px,2.1vw,19px);
-  }
-  .body p.lead{color:var(--ink)}
-  .rule{
-    border-top:1px solid var(--rule);
-    margin:clamp(36px,6vh,56px) 0 0;
-    padding-top:clamp(28px,5vh,40px);
-  }
-  .cap{
+  a{color:inherit;text-decoration:none}
+  .wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gut)}
+  .mono{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11px;
-    letter-spacing:0.16em;
-    text-transform:uppercase;
-    color:var(--ink-2);
-    display:block;
-    margin-bottom:14px;
+    font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
   }
-  .law{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:26px 34px;
-    max-width:760px;
-  }
-  .law div{border-left:2.5px solid var(--yolk);padding-left:14px}
-  .law b{display:block;font-weight:600;font-size:16px;margin-bottom:5px}
-  .law span{color:var(--ink-2);font-size:15px;line-height:1.4}
-  .act{margin:clamp(40px,7vh,64px) 0 0}
+
+  /* ---- the state mark: filled means a document is on file, hollow means none
+          was found. Absence is drawn, never dimmed. ---- */
+  .mk{width:9px;height:9px;flex:none;display:inline-block}
+  .mk.fill{background:currentColor}
+  .mk.ring{border:1.6px solid currentColor;border-radius:999px}
+
+  /* ---- masthead ---- */
+  header{border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--paper);z-index:20}
+  header .wrap{display:flex;align-items:center;gap:14px;height:62px}
+  .word{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  header nav{margin-left:auto;display:flex;align-items:center;gap:8px}
   .btn{
-    display:inline-flex;
-    align-items:center;
-    height:32px;
-    padding:0 16px;
-    background:var(--ink);
-    color:var(--ground);
-    text-decoration:none;
-    font-size:14px;
-    font-weight:500;
-    border:1px solid var(--ink);
+    display:inline-flex;align-items:center;justify-content:center;
+    height:38px;padding:0 17px;border-radius:999px;
+    border:1px solid var(--rule);background:var(--paper);color:var(--ink);
+    font-size:14.5px;font-weight:500;white-space:nowrap;
+    transition:background .16s ease,border-color .16s ease;
   }
-  .btn:hover{background:#000;border-color:#000}
-  footer{
-    flex:none;
-    width:100%;
-    max-width:880px;
-    padding:clamp(40px,8vh,80px) 24px 28px;
+  .btn:hover{border-color:var(--ink)}
+  .btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn.pri:hover{background:#000}
+
+  /* ---- hero ---- */
+  .hero{padding:clamp(64px,13vh,132px) 0 clamp(52px,9vh,92px)}
+  h1{
+    font-size:clamp(40px,7.2vw,76px);line-height:1.04;font-weight:500;
+    letter-spacing:-.034em;max-width:17ch;text-wrap:balance;
   }
-  footer .cap{margin:0}
+  .lede{
+    margin-top:clamp(24px,3.5vh,36px);max-width:54ch;
+    font-size:clamp(17px,1.9vw,20px);line-height:1.55;color:var(--ink-2);
+  }
+  .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:clamp(30px,4.5vh,44px)}
+
+  /* ---- the record, shown rather than described ---- */
+  .demo{
+    margin-top:clamp(48px,8vh,88px);
+    border:1px solid var(--rule);
+  }
+  .demo .cap{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:12px 18px;border-bottom:1px solid var(--rule);background:var(--raise);
+  }
+  .demo .body{padding:24px 18px 26px}
+  .demo .who{font-size:13.5px;color:var(--ink-2);margin-bottom:11px}
+  .demo .claim{
+    font-size:clamp(22px,3.3vw,30px);line-height:1.2;font-weight:500;letter-spacing:-.024em;
+    max-width:24ch;
+  }
+  .tag{
+    display:inline-flex;align-items:center;gap:8px;height:24px;padding:0 10px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+    border:1px solid var(--rule);background:var(--paper);color:var(--ink-2);
+  }
+  .tag.st{color:var(--against);background:#fdf4ed;border-color:#f0dcc9}
+  .tag.samp{border-style:dashed;border-color:var(--ink-3);color:var(--ink-3);background:none}
+  .doc{
+    margin-top:20px;padding:16px;border:1px solid var(--rule);background:var(--raise);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;line-height:1.7;color:var(--ink);white-space:pre-wrap;overflow-x:auto;
+  }
+  .flipline{margin-top:18px;font-size:14.5px;color:var(--ink-2);max-width:56ch}
+  .flipline b{color:var(--ink);font-weight:500}
+
+  /* ---- sections ---- */
+  section{border-top:1px solid var(--rule);padding:clamp(56px,9vh,104px) 0}
+  .shead{max-width:46ch;margin-bottom:clamp(32px,5vh,52px)}
+  .shead h2{
+    margin-top:14px;font-size:clamp(26px,3.6vw,38px);line-height:1.14;
+    font-weight:500;letter-spacing:-.026em;
+  }
+  .shead p{margin-top:16px;font-size:17px;line-height:1.6;color:var(--ink-2)}
+
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:1px;background:var(--rule)}
+  .rules div{background:var(--paper);padding:26px 22px 30px}
+  .rules b{display:block;font-size:17px;font-weight:600;letter-spacing:-.012em;margin-bottom:9px}
+  .rules span{font-size:15px;line-height:1.55;color:var(--ink-2)}
+
+  /* ---- the four states ---- */
+  .states{border-top:1px solid var(--rule)}
+  .state{
+    display:grid;grid-template-columns:auto 12rem 1fr;gap:18px;align-items:baseline;
+    padding:22px 0;border-bottom:1px solid var(--rule);
+  }
+  .state .mk{align-self:center}
+  .state .nm{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+  }
+  .state p{font-size:15.5px;line-height:1.55;color:var(--ink-2);max-width:56ch}
+  .st-sup .nm,.st-sup .mk{color:var(--ok)}
+  .st-con .nm,.st-con .mk{color:var(--against)}
+  .st-uns .nm,.st-uns .mk{color:var(--none)}
+  .st-unc .nm,.st-unc .mk{color:var(--moot)}
+  .states .note{padding:22px 0 0;font-size:15px;color:var(--ink-2);max-width:60ch;line-height:1.6}
+
+  /* ---- close ---- */
+  .close{text-align:left}
+  .close h2{font-size:clamp(28px,4.4vw,46px);line-height:1.1;font-weight:500;letter-spacing:-.03em;max-width:18ch}
+  .close p{margin-top:18px;max-width:50ch;font-size:17px;line-height:1.6;color:var(--ink-2)}
+
+  footer{border-top:1px solid var(--rule);padding:30px 0 44px}
+  footer .wrap{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+  footer a:hover{color:var(--ink)}
+
+  @media (max-width:640px){
+    :root{--gut:18px}
+    .state{grid-template-columns:auto 1fr;gap:10px 14px}
+    .state .nm{grid-column:2}
+    .state p{grid-column:2}
+  }
 </style>
 </head>
 <body>
+<!--
+THESIS: A record of claims that refuses to rank them. It declines the dark,
+high-density "intelligence terminal" every diligence tool ships, and reads as a
+document instead of a dashboard.
+OWN-WORLD: Paper white, near-black ink, hairline rules at #e6e6e6, Archivo as a
+neutral grotesk, monospace reserved for documents and labels. Four reserved
+hues, one per status, carried by a bordered field rather than a scattered
+accent. A filled square means a document is on file; a hollow ring means none
+was found.
+STORY: An investor understands the rule in one line, sees a real record prove
+it, learns that most records will say UNSUPPORTED, and opens the archive.
+FIRST VIEWPORT: Hairline masthead, then the claim/receipt headline at up to
+76px against open white, the lede at 54ch beneath it, two pill actions, and the
+top edge of a real record card entering the fold.
+FORM: Brief-pinned world (Codex / OpenAI marketing), which beats the roll.
+Raised by two declined challengers: seven-segment donates "absence is drawn as
+deliberately as light"; the glazier partition donates "colour reserved, carried
+by a field". Seed e2f5b73e.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the
+finish review, the verdict, DESIGN.md, and every shipping raster carrying its
+provenance.
+-->
+
+<header>
+  <div class="wrap">
+    <span class="word">Spill</span>
+    <nav>
+      <a class="btn" href="./">Prototype</a>
+      <a class="btn pri" href="./app/">Open the archive</a>
+    </nav>
+  </div>
+</header>
 
 <div class="wrap">
 
-  <header>
-    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
-      <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z"
-            fill="none" stroke="#111" stroke-width="7"/>
-      <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53"
-            fill="none" stroke="#F2A900" stroke-width="7" stroke-linejoin="miter"/>
-    </svg>
-    <span class="wordmark">Spill</span>
-  </header>
-
-  <h1>The claim is public. The <span class="y">receipt</span> should be too.</h1>
-
-  <div class="body">
-    <p class="lead">Founders state revenue, headcount, and funding in public, at volume, with nothing attached. Most of it is never checked by anyone.</p>
-    <p>When someone does check, they spend twenty minutes in the Delaware registry, on Wayback, in an archived job post. Then they paste the result into a group chat of nine people and it is gone by morning. The next person starts from zero.</p>
-    <p>Spill keeps that work. One page per claim, the source attached, open to anyone.</p>
-  </div>
-
-  <div class="rule">
-    <span class="cap">How it works</span>
-    <div class="law">
-      <div>
-        <b>A claim and a source</b>
-        <span>Every post pairs the statement with a document anyone can open. A filing, a cache, an archive link.</span>
-      </div>
-      <div>
-        <b>No source, no post</b>
-        <span>Rumor does not enter the record. The rule is the moderation policy and it is not negotiable.</span>
-      </div>
-      <div>
-        <b>Names are optional</b>
-        <span>Post without one. The source carries the weight, so the author does not have to.</span>
-      </div>
+  <div class="hero">
+    <h1>The claim is public. The document should be too.</h1>
+    <p class="lede">Founders state revenue, headcount and funding in public, constantly, with nothing attached. Almost none of it is ever checked. When someone does check, the work takes twenty minutes across the Delaware registry, Wayback and an archived job post — then it goes into a group chat of nine people and is gone by morning. The next person starts from zero.</p>
+    <div class="acts">
+      <a class="btn pri" href="./app/">Open the archive</a>
+      <a class="btn" href="#rule">How it works</a>
     </div>
   </div>
 
-  <div class="act">
-    <a class="btn" href="mailto:jonathan@codexfoundry.com?subject=Spill&body=Put%20me%20on%20the%20list.">Get in when it opens</a>
+  <div class="demo">
+    <div class="cap">
+      <span class="mono">A record</span>
+      <span class="tag samp">Sample &middot; fictional</span>
+    </div>
+    <div class="body">
+      <div class="who">Dex Mallory, founder, Nullset &middot; conference keynote, 2026-08-14</div>
+      <div class="claim">&ldquo;We crossed $4M ARR last month, fully bootstrapped.&rdquo;</div>
+      <div style="margin-top:16px"><span class="tag st"><span class="mk fill"></span>Contradicted</span></div>
+      <pre class="doc">DELAWARE FRANCHISE TAX REPORT
+Nullset Labs Inc. · filed 2026-03-02
+
+  Incorporation date ..... 2026-01-19
+  Authorized shares ...... 10,000,000
+
+FORM D (SEC) · filed 2026-02-28
+
+  Total offering amount .. $2,200,000
+  Total amount sold ...... $2,200,000</pre>
+      <p class="flipline"><b>What would change it:</b> a bank statement or an audited revenue figure covering the period.</p>
+    </div>
   </div>
 
 </div>
 
+<section id="rule">
+  <div class="wrap">
+    <div class="shead">
+      <span class="mono">The rule</span>
+      <h2>No source, no record.</h2>
+      <p>It is not a moderation policy. It is enforced in the archive's API, which refuses a record and tells you in plain words which document is missing.</p>
+    </div>
+    <div class="rules">
+      <div>
+        <b>A claim and a document</b>
+        <span>Every record pairs the statement with something anyone can open. A filing, a cache, an archive link.</span>
+      </div>
+      <div>
+        <b>Nothing is ranked</b>
+        <span>No likes, no scores, no trending. A crowd cannot vote a document into existence, and ranking claims by popularity would make this a publisher rather than a record.</span>
+      </div>
+      <div>
+        <b>Names are optional</b>
+        <span>File without one. The document carries the weight, so the person filing does not have to.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="shead">
+      <span class="mono">Status</span>
+      <h2>Four states, and none of them is a verdict on a person.</h2>
+      <p>Status describes the claim against the documents. <b>Fraud</b>, <b>lie</b> and <b>false</b> are deliberately unavailable, because intent cannot be sourced and so cannot be published.</p>
+    </div>
+    <div class="states">
+      <div class="state st-sup">
+        <span class="mk fill"></span><span class="nm">Supported</span>
+        <p>A document corroborates the claim.</p>
+      </div>
+      <div class="state st-con">
+        <span class="mk fill"></span><span class="nm">Contradicted</span>
+        <p>A named document states something incompatible with it.</p>
+      </div>
+      <div class="state st-uns">
+        <span class="mk ring"></span><span class="nm">Unsupported</span>
+        <p>Nothing was found either way. The honest default, and not an accusation. Most records should say this.</p>
+      </div>
+      <div class="state st-unc">
+        <span class="mk ring"></span><span class="nm">Uncheckable</span>
+        <p>No public document could settle it.</p>
+      </div>
+      <p class="note">A filled square means a document is on file. A hollow ring means none was found. Both are drawn the same size, because &ldquo;nothing found&rdquo; is a real answer and dimming it would say it mattered less.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap close">
+    <h2>The archive is open, and empty.</h2>
+    <p>No records have been filed yet. The one above is fictional and labeled as such, in the app and here. Anyone can file the first real one.</p>
+    <div class="acts">
+      <a class="btn pri" href="./app/">Open the archive</a>
+      <a class="btn" href="https://github.com/renaise/cf-spill">Read the source</a>
+    </div>
+  </div>
+</section>
+
 <footer>
-  <span class="cap">Codex Foundry &middot; 2026</span>
+  <div class="wrap">
+    <span class="mono">Codex Foundry &middot; 2026</span>
+    <a class="mono" href="./">Prototype</a>
+    <a class="mono" href="./app/">Archive</a>
+    <a class="mono" href="https://github.com/renaise/cf-spill">Source</a>
+  </div>
 </footer>
 
 </body>

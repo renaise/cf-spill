@@ -55,6 +55,18 @@ sideways from the claim to the source.
 The feed, the source page, the status filter menu, the archive grid, the rules,
 and the file sheet. Five nav slots: feed, archive, compose, notices, rules.
 
+## The world is paper
+
+Rebranded 2026-09-17 from black to paper white, on a brief pinning Codex /
+OpenAI's marketing brand. DESIGN.md holds the system; the short version is
+hairline rules instead of cards, Archivo on marketing and a system grotesque in
+the app, monospace reserved for documents and labels, and four reserved hues
+that appear nowhere else.
+
+A filled square means a document is on file; a hollow ring means none was found.
+UNSUPPORTED renders in full ink rather than grey, because it is the honest
+default and most records will carry it.
+
 ## The UI is a forum
 
 Rebuilt 2026-09-17 from the Sora full-screen pager into a scrolling forum.

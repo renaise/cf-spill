@@ -8,15 +8,19 @@
 <meta property="og:title" content="Spill — Mobile prototype">
 <meta property="og:description" content="The Spill mobile app, running live in a phone frame. Sample records.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z' fill='none' stroke='%23fff' stroke-width='7'/><path d='M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53' fill='none' stroke='%23F2A900' stroke-width='7' stroke-linejoin='miter'/></svg>">
+<meta name="theme-color" content="#fafafa">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23fff'/><rect x='6' y='9' width='9' height='9' fill='%230d0d0d'/><circle cx='22.5' cy='13.5' r='3.75' fill='none' stroke='%230d0d0d' stroke-width='1.6'/></svg>">
 <style>
   :root{
-    --ground:#0b0b0b;
-    --fg:#ffffff;
-    --dim:#8a8a8a;
-    --dimmer:#5a5a5a;
-    --line:#242424;
-    --yolk:#F2A900;
+    --ground:#fafafa;
+    --fg:#0d0d0d;
+    --dim:#5d5d5d;
+    --dimmer:#8f8f8f;
+    --line:#e6e6e6;
+    --accent:#0d0d0d;
     /* the app is authored at this size; the frame never rounds it */
     --dev-w:393px;
     --dev-h:852px;
@@ -28,9 +32,10 @@
   body{
     background:var(--ground);
     color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-family:Archivo,"Helvetica Neue",Helvetica,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
     font-size:15px;
-    line-height:1.45;
+    line-height:1.5;
+    letter-spacing:-.008em;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
@@ -44,11 +49,11 @@
 
   /* ---- masthead ---- */
   header{
-    display:flex;align-items:center;gap:13px;
-    padding:26px 24px 0;
+    display:flex;align-items:center;gap:11px;
+    padding:24px 24px 0;
   }
-  header .mark{width:26px;height:26px;flex:none;display:block}
-  header .wordmark{font-size:15px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase}
+  header .mark{width:22px;height:22px;flex:none;display:block}
+  header .wordmark{font-size:16px;font-weight:600;letter-spacing:-.01em}
   header .what{margin-left:auto;color:var(--dim)}
 
   /* ---- stage ---- */
@@ -71,12 +76,13 @@
     transform:scale(var(--k));
     transform-origin:top left;
     position:relative;
-    background:#1c1c1e;
+    background:#0d0d0d;
     border-radius:56px;
     padding:var(--bezel);
     box-shadow:
-      0 0 0 1px #3a3a3c,
-      0 40px 90px rgba(0,0,0,.7);
+      0 0 0 1px rgba(13,13,13,.18),
+      0 30px 70px rgba(13,13,13,.14),
+      0 4px 14px rgba(13,13,13,.06);
   }
   .device .screen{
     position:relative;
@@ -98,10 +104,9 @@
   .notes.left{justify-self:end}
   .notes.right{justify-self:start}
   .notes h1{
-    font-size:26px;line-height:1.14;font-weight:600;letter-spacing:-0.026em;
-    margin-bottom:16px;text-wrap:balance;
+    font-size:30px;line-height:1.1;font-weight:500;letter-spacing:-0.03em;
+    margin-bottom:18px;text-wrap:balance;
   }
-  .notes h1 .y{color:var(--yolk)}
   .notes p{color:var(--dim);margin-bottom:16px}
   .notes .cap{display:block;color:var(--dimmer);margin-bottom:12px}
 
@@ -114,21 +119,21 @@
   .gest b{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:10px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--yolk);font-weight:500;white-space:nowrap;
+    color:var(--fg);font-weight:500;white-space:nowrap;
   }
   .gest span{color:var(--dim);font-size:14px;line-height:1.4}
 
   .btn{
-    display:inline-flex;align-items:center;height:32px;padding:0 15px;
-    border:1px solid #3a3a3c;background:none;color:var(--fg);
-    text-decoration:none;font-size:13px;font-weight:500;border-radius:999px;
+    display:inline-flex;align-items:center;height:36px;padding:0 16px;
+    border:1px solid var(--line);background:#fff;color:var(--fg);
+    text-decoration:none;font-size:14px;font-weight:500;border-radius:999px;
   }
-  .btn:hover{border-color:#6a6a6c}
-  .btn.pri{background:var(--fg);color:#000;border-color:var(--fg)}
+  .btn:hover{border-color:var(--fg)}
+  .btn.pri{background:var(--fg);color:#fff;border-color:var(--fg)}
   .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
 
   footer{
-    border-top:1px solid var(--line);
+    border-top:1px solid var(--line);background:#fff;
     padding:22px 24px 40px;
     display:flex;gap:16px;flex-wrap:wrap;
     color:var(--dimmer);
@@ -169,11 +174,9 @@
 <body>
 
 <header>
-  <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
-    <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z"
-          fill="none" stroke="#fff" stroke-width="7"/>
-    <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53"
-          fill="none" stroke="#F2A900" stroke-width="7" stroke-linejoin="miter"/>
+  <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+    <rect x="3" y="7" width="11" height="11" fill="#0d0d0d"/>
+    <circle cx="23" cy="12.5" r="4.6" fill="none" stroke="#0d0d0d" stroke-width="1.9"/>
   </svg>
   <span class="wordmark">Spill</span>
   <span class="what mono">Mobile prototype</span>
@@ -182,7 +185,7 @@
 <div class="stage">
 
   <div class="notes left">
-    <h1>The claim is public. The <span class="y">receipt</span> should be too.</h1>
+    <h1>The claim is public. The document should be too.</h1>
     <p>Founders state revenue, headcount and funding in public, at volume, with nothing attached. When someone does check, the work lands in a group chat and is gone by morning.</p>
     <p>Spill keeps it. One record per claim, the source attached, open to anyone.</p>
     <div class="row">
