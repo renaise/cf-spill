@@ -55,40 +55,61 @@ sideways from the claim to the source.
 The feed, the source page, the status filter menu, the archive grid, the rules,
 and the file sheet. Five nav slots: feed, archive, compose, notices, rules.
 
+## The UI is a forum
+
+Rebuilt 2026-09-17 from the Sora full-screen pager into a scrolling forum.
+
+Mobbin has no Tea. Two searches for it returned QUITTR, Glassdoor, Reddit, Lex,
+Flo and BFF; the App Store listing rate-limited and the Play listing came back
+truncated. So the references are the Reddit and Glassdoor screens Mobbin did
+return, not Tea.
+
+A post card carries, in order: a byline row with the claimant and the date, the
+claim as the title, the status as a tag, the source document as a three-line
+excerpt, and an action row. Tapping the title or the source count opens the
+record on its own screen, with the claim, the full document and what would
+change the status.
+
+Filter chips replaced the dropdown. They run across one scrolling row under the
+wordmark, the way Reddit's category rail does, and carry a status dot each.
+
+**Reddit's vote column is deliberately absent.** Spill does not rank records,
+and the rules screen says why: a crowd cannot vote a document into existence,
+and ranking claims by popularity would make this a publisher rather than a
+record. The only number in the action row is a count of documents, which is a
+fact about the record rather than a verdict on it.
+
+**Tea's model is not adopted, only its shape.** Tea carries anonymous claims
+about private individuals. Spill's rules refuse exactly that, and refuse any
+claim about intent, which is what the four-value status enum exists to enforce.
+Tea was also breached in July 2025 — roughly 72,000 images including about
+13,000 photo IDs from identity verification, off a misconfigured storage bucket,
+and later over 1.1 million direct messages. Spill stores no images and no
+identity documents, and should not start.
+
+The archive tab is a dense two-line list of the same records rather than a grid
+of squares. The square grid was a Sora artifact and read mostly empty.
+
 ## Measured, not eyeballed
 
 Taken from the live page at 393 × 852, deviceScaleFactor 3.
 
 | Part | Box |
 |---|---|
-| Record | 393 × 852 |
-| Caption | y 664–754 |
-| Rail | y 483–692 |
-| Dots | y 771–776 |
 | Nav | y 788–852 |
 | Compose | 44 × 44 |
 
-The compose button is square, so its 999px radius renders a circle. That was the
-first thing checked, because it was 46 × 34 until this week and a 999px radius on
-an oblong gives an oblong.
+The compose button is square, so its 999px radius renders a circle. It was
+46 × 34 until this week, and a 999px radius on an oblong gives an oblong.
 
-## Where it follows Sora, and where it does not
+The caption, rail and dots measurements are gone with the pager they belonged
+to.
 
-Matched: the centered selector with its chevron and menu card, the right action
-rail, the bottom-left avatar and caption block, the centered page dots, the five
-nav slots with a raised white compose circle, and the status pill sitting bottom
-right above the nav.
+## What Sora left behind
 
-Deliberately different, and they should stay different:
-
-No counts under the rail icons. The rules screen argues for this directly — a
-crowd cannot vote a document into existence, and ranking claims by popularity
-would make Spill a publisher rather than a record.
-
-No follow badge on the caption avatar, and no people glyph in the top right.
-Sora's is a social graph. There isn't one here, so that slot opens the rules.
-
-No letterboxed media band. A claim is text.
+The five nav slots with a raised white compose circle survive the rebuild. So
+does the top-right slot opening the rules rather than a social graph, since
+there is no social graph here.
 
 ## Fixed 2026-09-17
 

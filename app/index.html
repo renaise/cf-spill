@@ -53,127 +53,120 @@
   .view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
   .view.on{display:block}
 
-  /* ---- feed: full-bleed, one record per page ---- */
-  #feed{scroll-snap-type:y mandatory;overscroll-behavior-y:contain}
-  .rec{
-    scroll-snap-align:start;scroll-snap-stop:always;
-    height:100%;position:relative;overflow:hidden;
+  /* ---- header: wordmark and the rules ---- */
+  #top{
+    position:fixed;left:0;right:0;top:0;z-index:25;
+    padding:calc(var(--top) + 6px) 14px 0;
+    display:flex;align-items:center;height:calc(var(--top) + 44px);
+    background:var(--bg);
   }
+  #selName{font-size:16px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  #top .ico{margin-left:auto;width:34px;height:34px;display:grid;place-items:center}
+  #top .ico svg{width:22px;height:22px;stroke:#fff;stroke-width:1.8;fill:none}
+  body.detail #top{justify-content:center}
+  body.detail #selName{margin:0 auto;font-size:13px;letter-spacing:.14em;color:var(--dim)}
+  body.detail #top .ico{display:none}
 
-  /* horizontal pager: claim, then source */
-  .pages{
-    position:absolute;inset:0;
-    display:flex;overflow-x:auto;overflow-y:hidden;
-    scroll-snap-type:x mandatory;scrollbar-width:none;
+  /* ---- filter chips: Reddit's category rail, one row, scrolls sideways ---- */
+  #chips{
+    position:fixed;left:0;right:0;z-index:24;
+    top:calc(var(--top) + 44px);
+    display:flex;gap:7px;padding:0 14px 10px;
+    overflow-x:auto;scrollbar-width:none;
+    background:var(--bg);border-bottom:1px solid var(--line);
   }
-  .pages::-webkit-scrollbar{display:none}
-  .page{
-    flex:0 0 100%;width:100%;height:100%;
-    scroll-snap-align:start;scroll-snap-stop:always;
-    overflow-y:auto;-webkit-overflow-scrolling:touch;
-    padding:calc(var(--top) + 64px) 76px calc(var(--nav) + var(--bot) + var(--strip) + 190px) 20px;
+  #chips::-webkit-scrollbar{display:none}
+  #chips button{
+    flex:none;display:inline-flex;align-items:center;gap:6px;
+    height:30px;padding:0 13px;border-radius:999px;
+    border:1px solid var(--line);color:var(--dim);
+    font-size:13px;font-weight:500;white-space:nowrap;
   }
-  .page.claim{display:flex;flex-direction:column;justify-content:center}
-  .page .lbl{font-size:10px;color:var(--dim);margin-bottom:14px}
-  .claimtext{font-size:clamp(27px,7.6vw,38px);line-height:1.14;font-weight:600;letter-spacing:-.033em}
-  .doc{
+  #chips button[aria-selected="true"]{background:var(--fg);color:#000;border-color:var(--fg)}
+  #chips button i{width:7px;height:7px;border-radius:999px;flex:none}
+
+  /* ---- the forum list ---- */
+  #feed{padding:calc(var(--top) + 96px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 16px)}
+  .post{
+    display:block;width:100%;text-align:left;
+    padding:15px 16px 13px;
+    border-bottom:1px solid var(--line);
+  }
+  .post:active{background:#0b0b0b}
+  .phead{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .phead .av{width:26px;height:26px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
+  .phead .av svg{width:15px;height:15px}
+  .phead .nm{font-size:13px;font-weight:600;letter-spacing:-.005em;min-width:0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .phead .tm{font-size:12px;color:var(--dim);flex:none;margin-left:auto;padding-left:8px}
+  .ptitle{font-size:17px;line-height:1.28;font-weight:600;letter-spacing:-.018em;margin-bottom:9px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .tag{
+    display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.1em;
+    background:rgba(255,255,255,.07);color:var(--dim);
+  }
+  .tag i{width:6px;height:6px;border-radius:999px;flex:none}
+  .tag.samp{background:none;border:1px dashed var(--dimmer);color:var(--dimmer)}
+  .s-SUPPORTED   .tag.st{color:var(--ok)}    .s-SUPPORTED   .tag.st i{background:var(--ok)}
+  .s-CONTRADICTED .tag.st{color:var(--yolk)} .s-CONTRADICTED .tag.st i{background:var(--yolk)}
+  .s-UNSUPPORTED .tag.st{color:var(--dim)}   .s-UNSUPPORTED .tag.st i{background:var(--dim)}
+  .s-UNCHECKABLE .tag.st{color:var(--dimmer)}.s-UNCHECKABLE .tag.st i{background:var(--dimmer)}
+  .pbody{
+    font-size:13.5px;line-height:1.45;color:#a8a8a8;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  /* Reddit's action row, with the vote column removed. Spill does not rank
+     records, so the only number here is a count of documents, which is a fact
+     about the record rather than a verdict on it. */
+  .pacts{display:flex;align-items:center;gap:6px;margin-top:11px}
+  .pacts button,.pacts .src{
+    display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;
+    border-radius:999px;background:rgba(255,255,255,.06);
+    font-size:12.5px;color:var(--dim);
+  }
+  .pacts svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none}
+  .pacts .grow{margin-left:auto}
+
+  /* ---- one record, opened ---- */
+  #detail{padding:calc(var(--top) + 54px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 28px)}
+  #detail .lbl{font-size:10px;color:var(--dim);margin-bottom:10px}
+  #detail .claimtext{font-size:clamp(23px,6.4vw,30px);line-height:1.18;font-weight:600;letter-spacing:-.028em}
+  #detail .meta{margin-top:14px;font-size:13px;color:var(--dim);line-height:1.5}
+  #detail .doc{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:12px;line-height:1.62;color:#d6d6d6;white-space:pre-wrap;
   }
+  #detail .sec{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+  #detail .flip{font-size:13.5px;color:#cfcfcf;line-height:1.5}
+  #back{
+    position:fixed;z-index:26;left:10px;top:calc(var(--top) + 6px);
+    width:34px;height:34px;display:none;place-items:center;
+  }
+  #back.on{display:grid}
+  #back svg{width:22px;height:22px;stroke:#fff;stroke-width:1.9;fill:none}
 
-  /* ---- top overlay: feed selector + rules ---- */
-  #top{
-    position:fixed;left:0;right:0;top:0;z-index:25;
-    padding:calc(var(--top) + 8px) 14px 0;
-    display:flex;align-items:center;justify-content:center;
-    pointer-events:none;height:calc(var(--top) + 44px);
-  }
-  #top>*{pointer-events:auto}
-  #sel{
-    display:inline-flex;align-items:center;gap:5px;
-    font-size:16px;font-weight:600;letter-spacing:-.01em;
-    padding:5px 10px;border-radius:999px;
-  }
-  #sel svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none;opacity:.85}
-  #sel.pill{background:#1c1c1c;font-size:14px}
-  #top .ico{
-    position:absolute;right:12px;top:calc(var(--top) + 10px);
-    width:34px;height:34px;display:grid;place-items:center;
-  }
-  #top .ico svg{width:23px;height:23px;stroke:#fff;stroke-width:1.8;fill:none}
+  /* ---- empty state ---- */
+  .empty{padding:60px 20px;text-align:left}
+  .empty .lbl{font-size:10px;color:var(--dim);margin-bottom:12px}
+  .empty h3{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+  .empty p{margin-top:12px;font-size:14px;color:var(--dim);line-height:1.5;max-width:32ch}
 
-  /* feed-selector menu */
-  #menu{
-    position:fixed;z-index:45;inset:0;display:none;
+  /* ---- archive: the same records, dense ---- */
+  #archive{padding:calc(var(--top) + 54px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
+  .ghead{padding:0 16px 12px;color:var(--dim);font-size:11px}
+  .arow{
+    display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+    padding:13px 16px;border-bottom:1px solid var(--line);
   }
-  #menu.on{display:block}
-  #menu .card{
-    position:absolute;top:calc(var(--top) + 46px);left:50%;transform:translateX(-50%);
-    width:236px;background:#1c1c1c;border-radius:16px;padding:6px;
-    box-shadow:0 12px 40px rgba(0,0,0,.6);
-  }
-  #menu .card button{
-    display:flex;align-items:center;gap:11px;width:100%;
-    padding:11px 12px;border-radius:11px;font-size:15px;text-align:left;
-  }
-  #menu .card button .tick{width:16px;flex:none;color:var(--fg)}
-  #menu .card button[aria-selected="false"] .tick{visibility:hidden}
-  #menu .card button .dot{width:8px;height:8px;border-radius:999px;flex:none}
-
-  /* ---- right action rail ---- */
-  .rail{
-    position:absolute;right:8px;z-index:12;
-    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 96px);
-    display:flex;flex-direction:column;align-items:center;gap:19px;
-  }
-  .rail button{width:38px;height:38px;display:grid;place-items:center}
-  .rail svg{width:27px;height:27px;stroke:#fff;stroke-width:1.7;fill:none}
-  .rail button[data-more] svg{width:24px;stroke-width:2.6}
-  .rail button.act svg{stroke:var(--yolk)}
-
-  /* ---- bottom-left caption block ---- */
-  .cap{
-    position:absolute;left:16px;z-index:12;
-    right:62px;bottom:calc(var(--nav) + var(--bot) + var(--strip) + 34px);
-  }
-  .cap .who{display:flex;align-items:center;gap:9px;margin-bottom:7px}
-  .cap .av{width:32px;height:32px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
-  .cap .av svg{width:18px;height:18px}
-  .cap .nm{font-size:14px;font-weight:600;letter-spacing:-.01em}
-  .cap .tm{font-size:13px;color:#cfcfcf;line-height:1.38}
-  .cap .st{
-    display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;margin-top:9px;
-    border-radius:999px;background:rgba(255,255,255,.1);
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.11em;
-  }
-  .cap .st i{width:6px;height:6px;border-radius:999px;flex:none}
-  .cap .samp{border:1px dashed var(--dimmer);background:none;color:var(--dimmer);margin-left:5px}
-  .s-SUPPORTED .st i{background:var(--ok)}      .s-SUPPORTED .st{color:var(--ok)}
-  .s-CONTRADICTED .st i{background:var(--yolk)} .s-CONTRADICTED .st{color:var(--yolk)}
-  .s-UNSUPPORTED .st i{background:var(--dim)}   .s-UNSUPPORTED .st{color:var(--dim)}
-  .s-UNCHECKABLE .st i{background:var(--dimmer)} .s-UNCHECKABLE .st{color:var(--dimmer)}
-
-  /* ---- page dots ---- */
-  .dots{
-    position:absolute;left:0;right:0;z-index:12;
-    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 12px);
-    display:flex;justify-content:center;gap:6px;pointer-events:none;
-  }
-  .dots i{width:5px;height:5px;border-radius:999px;background:#4a4a4a;transition:background .18s}
-  .dots i.on{background:#fff}
-
-  /* ---- archive grid ---- */
-  #archive{padding:calc(var(--top) + 54px) 12px calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-  .cell{aspect-ratio:1;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden;
-        display:flex;flex-direction:column;align-items:stretch}
-  .cell p{font-size:9.5px;line-height:1.32;color:#c2c2c2;overflow:hidden;max-height:74%}
-  .cell i{position:absolute;left:9px;bottom:8px;width:6px;height:6px;border-radius:999px}
-  .s-SUPPORTED .cell i,.cell.s-SUPPORTED i{background:var(--ok)}
-  .s-CONTRADICTED .cell i,.cell.s-CONTRADICTED i{background:var(--yolk)}
-  .s-UNSUPPORTED .cell i,.cell.s-UNSUPPORTED i{background:var(--dim)}
-  .s-UNCHECKABLE .cell i,.cell.s-UNCHECKABLE i{background:var(--dimmer)}
-  .ghead{font-size:10px;color:var(--dim);margin:0 2px 11px}
+  .arow i{width:7px;height:7px;border-radius:999px;flex:none;margin-top:5px}
+  .arow .t{font-size:14px;line-height:1.35;overflow:hidden;display:-webkit-box;
+           -webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .arow .w{font-size:12px;color:var(--dim);margin-top:3px}
+  .s-SUPPORTED   .arow i,.arow.s-SUPPORTED i{background:var(--ok)}
+  .s-CONTRADICTED .arow i,.arow.s-CONTRADICTED i{background:var(--yolk)}
+  .s-UNSUPPORTED .arow i,.arow.s-UNSUPPORTED i{background:var(--dim)}
+  .s-UNCHECKABLE .arow i,.arow.s-UNCHECKABLE i{background:var(--dimmer)}
 
   /* ---- about ---- */
   #about{padding:calc(var(--top) + 54px) 20px calc(var(--nav) + var(--bot) + 28px)}
@@ -232,14 +225,10 @@
   .err{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
   .okmsg{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
 
-  /* ---- toast: Sora's status pill, lifted ---- */
-  /* Sora's sits at the caption's height because it says one word. These say
-     sentences, so at that height they cover the byline and the status chip.
-     It rides above the caption instead, and right:62px keeps it off the rail. */
+  /* ---- toast ---- */
   #toast{
-    position:fixed;z-index:70;right:62px;
-    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 132px);
-    max-width:calc(100% - 76px);
+    position:fixed;z-index:70;left:14px;right:14px;
+    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 14px);
     background:#1c1c1c;border-radius:999px;padding:10px 14px;
     display:none;align-items:center;gap:9px;font-size:13.5px;
     box-shadow:0 8px 28px rgba(0,0,0,.5);
@@ -284,17 +273,21 @@
 <div id="toast"><span class="x"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span id="toastMsg"></span></div>
 
 <div id="top">
-  <button id="sel">
-    <span id="selName">Latest</span>
-    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-  </button>
+  <span id="selName">Spill</span>
   <button class="ico" id="openAbout" aria-label="The rules">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.3"/></svg>
   </button>
 </div>
 
+<button id="back" aria-label="Back">
+  <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+</button>
+
+<div id="chips"></div>
+
 <main>
   <section class="view on" id="feed"></section>
+  <section class="view" id="detail"></section>
   <section class="view" id="archive"></section>
   <section class="view" id="about">
     <h2>The rule</h2>
@@ -317,10 +310,6 @@
 </main>
 
 <div id="vtitle"></div>
-
-<div id="menu">
-  <div class="card" id="menuCard"></div>
-</div>
 
 <div class="scrim" id="more">
   <div class="sheet">
@@ -443,15 +432,17 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const FEEDS = [
-  { id:'all',           name:'Latest',       label:'Latest' },
-  { id:'open',          name:'Unchecked',    label:'Unchecked' },
-  { id:'CONTRADICTED',  name:'Contradicted', label:'Contradicted', dot:'var(--yolk)' },
-  { id:'SUPPORTED',     name:'Supported',    label:'Supported',    dot:'var(--ok)' },
+  { id:'all',            name:'All' },
+  { id:'open',           name:'Unchecked' },
+  { id:'CONTRADICTED',   name:'Contradicted', dot:'var(--yolk)' },
+  { id:'SUPPORTED',      name:'Supported',    dot:'var(--ok)' },
+  { id:'UNSUPPORTED',    name:'Unsupported',  dot:'var(--dim)' },
+  { id:'UNCHECKABLE',    name:'Uncheckable',  dot:'var(--dimmer)' },
 ];
 let feedId = 'all';
 
 let records = SAMPLES;
-let live = false;   // true only once real records have actually loaded
+let live = false;   // true only once the archive has actually answered
 let openRec = null; // the record the ••• sheet was opened on
 
 function visible(){
@@ -460,7 +451,7 @@ function visible(){
   return records.filter(r => r.status === feedId);
 }
 
-// The status chip says SAMPLE per card; the banner says it once at the top. Both are
+// The tag says SAMPLE per card; the banner says it once at the top. Both are
 // driven off `live` so they cannot disagree with what is on screen.
 function markSampleState(){
   $('#sample').hidden = live;
@@ -484,13 +475,14 @@ async function loadRecords(){
       status: r.status,
       flip: r.would_change,
       url: r.made_url,
+      sources: (r.checks || []).length,
       doc: (r.checks || []).length
         ? r.checks.map(c => `${c.what}\n${c.says}\n${c.url}`).join('\n\n')
         : 'No corroborating document is on file.\n\nThe original claim is archived at:\n' + r.made_url,
     }));
   } catch (e) {
     // Offline or the archive is down. Samples stay, banner stays, and the SAMPLE
-    // chip stays on every card. Nothing is silently faked.
+    // tag stays on every card. Nothing is silently faked.
   }
 }
 
@@ -499,116 +491,120 @@ const MARK = `<svg viewBox="0 0 100 100" aria-hidden="true">
   <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="8"/>
 </svg>`;
 
+const ICON = {
+  doc:  '<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>',
+  copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg>',
+  share:'<svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-7 18-3.5-7.5L3 10z"/></svg>',
+  more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9" fill="currentColor"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><circle cx="19" cy="12" r=".9" fill="currentColor"/></svg>',
+};
+
+function sourceLine(r){
+  const n = r.sources === undefined ? (r.doc ? 1 : 0) : r.sources;
+  if (!n) return 'No document on file';
+  return n === 1 ? '1 source' : n + ' sources';
+}
+
+function renderChips(){
+  $('#chips').innerHTML = FEEDS.map(f => `
+    <button data-feed="${f.id}" aria-selected="${f.id === feedId}">
+      ${f.dot ? `<i style="background:${f.dot}"></i>` : ''}${f.name}
+    </button>`).join('');
+}
+
+function emptyBlock(){
+  const bare = live && !records.length;
+  return `<div class="empty">
+    <div class="lbl mono">${bare ? 'The archive is open' : 'Nothing here'}</div>
+    <h3>${bare ? 'No records have been filed yet.' : 'No records carry this status yet.'}</h3>
+    ${bare ? '<p>A record is a public claim plus a document anyone can open. File the first one with the + button.</p>' : ''}
+  </div>`;
+}
+
 function renderFeed(){
   const rs = visible();
-  if (!rs.length){
-    // An empty archive and an empty filter are different facts, and saying the
-    // wrong one would send a person looking for a record that was never filed.
-    const bare = live && !records.length;
-    const head = bare ? 'The archive is open' : 'Nothing here';
-    const line = bare
-      ? 'No records have been filed yet.'
-      : 'No records carry this status yet.';
-    const sub = bare
-      ? 'A record is a public claim plus a document anyone can open. File the first one with the + button.'
-      : '';
-    $('#feed').innerHTML = `<article class="rec"><div class="page claim">
-      <div class="lbl mono">${head}</div>
-      <div class="claimtext" style="font-size:24px">${line}</div>
-      ${sub ? `<p style="margin-top:16px;font-size:14px;color:#8a8a8a;line-height:1.5;max-width:30ch">${sub}</p>` : ''}
-      </div></article>`;
-    return;
-  }
+  if (!rs.length){ $('#feed').innerHTML = emptyBlock(); return; }
   $('#feed').innerHTML = rs.map((r, i) => `
-    <article class="rec s-${r.status}" data-i="${i}">
-      <div class="pages">
-        <div class="page claim">
-          <div class="lbl mono">The claim</div>
-          <div class="claimtext">${esc(r.claim)}</div>
-        </div>
-        <div class="page">
-          <div class="lbl mono">The source</div>
-          <div class="doc">${esc(r.doc)}</div>
-          <div class="lbl mono" style="margin:22px 0 8px">Would change it</div>
-          <div style="font-size:13.5px;color:#cfcfcf;line-height:1.5">${esc(r.flip)}</div>
-        </div>
+    <article class="post s-${r.status}" data-i="${i}">
+      <div class="phead">
+        <span class="av">${MARK}</span>
+        <span class="nm">${esc(r.who)}</span>
+        <span class="tm">${esc((r.made || '').split(', ').pop())}</span>
       </div>
-
-      <div class="rail">
-        <button data-page="1" aria-label="The source"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></button>
-        <button data-act="copytext" aria-label="Copy the record"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg></button>
-        <button data-act="share" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-7 18-3.5-7.5L3 10z"/></svg></button>
-        <button data-more aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9" fill="#fff"/><circle cx="12" cy="12" r=".9" fill="#fff"/><circle cx="19" cy="12" r=".9" fill="#fff"/></svg></button>
+      <button class="ptitle" data-open style="display:block;width:100%;text-align:left">${esc(r.claim)}</button>
+      <div class="tags">
+        <span class="tag st"><i></i>${esc(r.status)}</span>
+        ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
       </div>
-
-      <div class="cap">
-        <div class="who">
-          <span class="av">${MARK}</span>
-          <span class="nm">${esc(r.who)}</span>
-        </div>
-        <div class="tm">${esc(r.made)}</div>
-        <div>
-          <span class="st"><i></i>${esc(r.status)}</span>
-          ${live ? '' : '<span class="st samp">SAMPLE</span>'}
-        </div>
+      <div class="pbody">${esc(r.doc)}</div>
+      <div class="pacts">
+        <button data-open>${ICON.doc}${sourceLine(r)}</button>
+        <button data-act="copytext" aria-label="Copy the record">${ICON.copy}</button>
+        <button data-act="share" aria-label="Share">${ICON.share}</button>
+        <button data-more class="grow" aria-label="More">${ICON.more}</button>
       </div>
-
-      <div class="dots"><i class="on"></i><i></i></div>
     </article>`).join('');
-
-  // Dots follow the horizontal pager.
-  $('#feed').querySelectorAll('.rec').forEach(rec => {
-    const pager = rec.querySelector('.pages');
-    const dots  = rec.querySelectorAll('.dots i');
-    if (!pager) return;
-    pager.addEventListener('scroll', () => {
-      const p = Math.round(pager.scrollLeft / pager.clientWidth);
-      dots.forEach((d, n) => d.classList.toggle('on', n === p));
-    }, { passive: true });
-  });
 }
+
+function renderDetail(r){
+  $('#detail').innerHTML = `
+    <div class="s-${r.status}">
+      <div class="lbl mono">The claim</div>
+      <div class="claimtext">${esc(r.claim)}</div>
+      <div class="meta">${esc(r.who)}<br>${esc(r.made)}</div>
+      <div class="tags" style="margin-top:14px">
+        <span class="tag st"><i></i>${esc(r.status)}</span>
+        ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
+      </div>
+      <div class="sec">
+        <div class="lbl mono">The source</div>
+        <div class="doc">${esc(r.doc)}</div>
+      </div>
+      <div class="sec">
+        <div class="lbl mono">Would change it</div>
+        <div class="flip">${esc(r.flip)}</div>
+      </div>
+    </div>`;
+}
+
+function openRecord(r){ openRec = r; renderDetail(r); show('detail'); }
 
 function renderArchive(){
   const rs = visible();
   const head = rs.length
     ? `${rs.length} record${rs.length === 1 ? '' : 's'} · ${live ? 'archive' : 'sample'}`
     : (live ? 'No records filed yet' : 'No sample records');
-  $('#archive').innerHTML =
-    `<div class="ghead mono">${head}</div><div class="grid">` +
-    rs.map((r, i) => `<button class="cell s-${r.status}" data-jump="${i}"><p>${esc(r.claim)}</p><i></i></button>`).join('') +
-    `</div>`;
+  $('#archive').innerHTML = `<div class="ghead mono">${head}</div>` +
+    (rs.length
+      ? rs.map((r, i) => `<button class="arow s-${r.status}" data-jump="${i}">
+           <i></i><span><span class="t">${esc(r.claim)}</span>
+           <span class="w">${esc(r.who)}</span></span></button>`).join('')
+      : '');
 }
 
 function show(v){
   if (v === 'reports'){ toast('Notices arrive when a record you filed gets a source.'); return; }
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === v));
-  document.querySelectorAll('nav button[data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === v));
-  $('#top').style.display = (v === 'feed') ? '' : 'none';
+  document.querySelectorAll('nav button[data-view]').forEach(b =>
+    b.setAttribute('aria-selected', b.dataset.view === v));
+  const feedish = (v === 'feed');
+  $('#chips').style.display = feedish ? '' : 'none';
+  $('#top').style.display = (v === 'feed' || v === 'detail') ? '' : 'none';
+  $('#back').classList.toggle('on', v === 'detail');
+  document.body.classList.toggle('detail', v === 'detail');
+  $('#selName').textContent = v === 'detail' ? 'Record' : 'Spill';
   const t = $('#vtitle');
-  t.classList.toggle('on', v !== 'feed');
+  t.classList.toggle('on', v === 'archive' || v === 'about');
   t.textContent = v === 'archive' ? 'Archive' : v === 'about' ? 'The rules' : '';
 }
 
-/* ---- feed selector menu ---- */
-function renderMenu(){
-  $('#menuCard').innerHTML = FEEDS.map(f => `
-    <button data-feed="${f.id}" aria-selected="${f.id === feedId}">
-      <span class="tick">✓</span>
-      ${f.dot ? `<span class="dot" style="background:${f.dot}"></span>` : ''}
-      <span>${f.label}</span>
-    </button>`).join('');
-}
-$('#sel').addEventListener('click', () => { renderMenu(); $('#menu').classList.add('on'); });
-$('#menu').addEventListener('click', e => {
-  const b = e.target.closest('[data-feed]');
-  if (b){
-    feedId = b.dataset.feed;
-    $('#selName').textContent = FEEDS.find(f => f.id === feedId).name;
-    $('#sel').classList.toggle('pill', feedId !== 'all');
-    renderFeed(); renderArchive(); $('#feed').scrollTop = 0;
-  }
-  $('#menu').classList.remove('on');
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-feed]'); if (!b) return;
+  feedId = b.dataset.feed;
+  renderChips(); renderFeed(); renderArchive();
+  $('#feed').scrollTo({ top: 0 });
 });
+
+$('#back').addEventListener('click', () => show('feed'));
 
 document.querySelectorAll('nav button[data-view]').forEach(b =>
   b.addEventListener('click', () => show(b.dataset.view)));
@@ -633,19 +629,12 @@ function act(name, r){
 }
 
 $('#feed').addEventListener('click', e => {
-  const rec = e.target.closest('.rec'); if (!rec || !rec.dataset.i) return;
-  const r = visible()[+rec.dataset.i]; if (!r) return;
-
-  const pg = e.target.closest('[data-page]');
-  if (pg){
-    const pager = rec.querySelector('.pages');
-    const to = pager.scrollLeft > pager.clientWidth / 2 ? 0 : pager.clientWidth;
-    pager.scrollTo({ left: to, behavior: 'smooth' });
-    return;
-  }
+  const post = e.target.closest('.post'); if (!post) return;
+  const r = visible()[+post.dataset.i]; if (!r) return;
   if (e.target.closest('[data-more]')){ openRec = r; $('#more').classList.add('on'); return; }
   const a = e.target.closest('[data-act]');
-  if (a) act(a.dataset.act, r);
+  if (a){ act(a.dataset.act, r); return; }
+  if (e.target.closest('[data-open]')) openRecord(r);
 });
 
 $('#more').addEventListener('click', e => {
@@ -657,11 +646,8 @@ $('#more').addEventListener('click', e => {
 
 $('#archive').addEventListener('click', e => {
   const c = e.target.closest('[data-jump]'); if (!c) return;
-  show('feed');
-  requestAnimationFrame(() => {
-    const el = $('#feed').children[+c.dataset.jump];
-    el && el.scrollIntoView({ block: 'start' });
-  });
+  const r = visible()[+c.dataset.jump];
+  if (r) openRecord(r);
 });
 
 let toastT = null;
@@ -801,7 +787,7 @@ $('#installGo').addEventListener('click', async () => {
 $('#installNo').addEventListener('click', () => { hideInstall(); dismiss(); });
 addEventListener('appinstalled', () => { hideInstall(); dismiss(); });
 
-markSampleState(); renderFeed(); renderArchive();
+renderChips(); markSampleState(); renderFeed(); renderArchive();
 loadRecords().then(() => { markSampleState(); renderFeed(); renderArchive(); });
 
 // The service worker is a web-only concern. Inside the native shell the files are
