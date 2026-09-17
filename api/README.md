@@ -1,6 +1,6 @@
-# cracked-api
+# spill-api
 
-Cloudflare Worker + D1 behind Cracked.
+Cloudflare Worker + D1 behind Spill.
 
 `src/index.js` holds the gate. It refuses with a reason string rather than a boolean,
 and `test.mjs` asserts on those exact strings so the copy a person reads and the
@@ -33,7 +33,7 @@ NODE_OPTIONS= node test.mjs
 ## Run locally
 
 ```bash
-NODE_OPTIONS= npx wrangler d1 execute cracked --local --file=schema.sql
+NODE_OPTIONS= npx wrangler d1 execute spill --local --file=schema.sql
 NODE_OPTIONS= npx wrangler dev --local --port 8799
 ```
 
@@ -43,12 +43,12 @@ NODE_OPTIONS= npx wrangler dev --local --port 8799
 
 **Not deployed yet. The account decision is open.** Only one Cloudflare account is
 reachable from this machine and it authenticates as `admin@artificenyc.org`, the
-501(c)(3) address. Cracked is Codex Foundry, so putting its database there crosses the
+501(c)(3) address. Spill is Codex Foundry, so putting its database there crosses the
 entity wall. Resolve before running:
 
 ```bash
-NODE_OPTIONS= npx wrangler d1 create cracked        # copy database_id into wrangler.toml
-NODE_OPTIONS= npx wrangler d1 execute cracked --remote --file=schema.sql
+NODE_OPTIONS= npx wrangler d1 create spill        # copy database_id into wrangler.toml
+NODE_OPTIONS= npx wrangler d1 execute spill --remote --file=schema.sql
 NODE_OPTIONS= npx wrangler deploy
 ```
 

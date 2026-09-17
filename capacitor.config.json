@@ -1,6 +1,6 @@
 {
-  "appId": "com.codexfoundry.cracked",
-  "appName": "Cracked",
+  "appId": "com.codexfoundry.spill",
+  "appName": "Spill",
   "webDir": "app",
   "ios": {
     "contentInset": "never",

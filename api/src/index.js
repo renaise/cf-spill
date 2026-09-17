@@ -1,4 +1,4 @@
-// Cracked API.
+// Spill API.
 //
 // The product rule and the legal position are the same object: a record is a public
 // claim plus documents anyone can open. This file is where that rule is enforced. It
@@ -137,7 +137,7 @@ export default {
 
     try {
       if (url.pathname === '/health') {
-        return json({ ok: true, service: 'cracked-api' }, 200, headers);
+        return json({ ok: true, service: 'spill-api' }, 200, headers);
       }
 
       if (url.pathname === '/records' && request.method === 'GET') {

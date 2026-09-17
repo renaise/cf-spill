@@ -1,4 +1,4 @@
--- Cracked. A record is a claim plus at least one openable source.
+-- Spill. A record is a claim plus at least one openable source.
 -- The one-source minimum is enforced in the API, not here, so the refusal can
 -- carry a reason string. This schema is the shape; index.js is the gate.
 

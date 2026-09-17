@@ -1,11 +1,11 @@
-name = "cracked-api"
+name = "spill-api"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
-# Fill database_id after: wrangler d1 create cracked
+# Fill database_id after: wrangler d1 create spill
 [[d1_databases]]
 binding = "DB"
-database_name = "cracked"
+database_name = "spill"
 database_id = "FILL_AFTER_d1_create"
 
 [vars]

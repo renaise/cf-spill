@@ -1,4 +1,4 @@
-# Cracked — prototype notes
+# Spill — prototype notes
 
 Started 2026-09-17. What the root URL now serves, what the app measured when it
 was inspected, and what is still wrong with it.
@@ -60,29 +60,39 @@ Deliberately different, and they should stay different:
 
 No counts under the rail icons. The rules screen argues for this directly — a
 crowd cannot vote a document into existence, and ranking claims by popularity
-would make Cracked a publisher rather than a record.
+would make Spill a publisher rather than a record.
 
 No follow badge on the caption avatar, and no people glyph in the top right.
 Sora's is a social graph. There isn't one here, so that slot opens the rules.
 
 No letterboxed media band. A claim is text.
 
-## Known defects
+## Fixed 2026-09-17
 
-**The install bar covers the record byline and the status chip.** It sits at
-`nav + bot + 14px`, which puts it over y 708–774; the caption runs to 754. The
-second line of the byline and the SUPPORTED / CONTRADICTED chip are both behind
-it. The chip is the whole point of a record, so this is the one worth fixing
-first. It is web-only and dismissible, and it does not appear in the native
-build.
+**The install bar covered the record byline and the status chip.** It now claims
+space through a `--strip` token instead of floating over the record. Everything
+positioned off the nav — the caption, the rail, the dots, the toast, the page
+padding, the archive — also clears `--strip`, so the record rides above the strip
+rather than under it. `showInstall()` measures the rendered strip and sets the
+token from it, because the iOS copy runs to two lines and the Chrome copy to one;
+the 58px in the stylesheet is only a fallback. Showing and hiding both go through
+`showInstall()` / `hideInstall()` so the strip and the space it claims cannot
+disagree.
 
-**Archive cells are 9/16 holding three lines.** Roughly 70% of each cell is
-empty. The ratio is right for Sora because Sora's grid is video thumbnails.
+**Archive cells were 9/16 holding three lines,** roughly 70% empty. They are
+square now, 121 × 121 at 393 wide. The 9/16 ratio is right for Sora because
+Sora's grid is video stills.
 
-**A long toast can reach the caption.** Its `max-width` is `100% - 28px`, so it
-can extend to x 14 while the caption runs to x 331. It clears the page dots by
-9px, which was the constraint that set its height, but nothing stops it
-horizontally.
+**A long toast reached the caption.** Sora's pill sits at the caption's height
+because it says one word; these say whole sentences. The toast now rides above
+the caption at `nav + bot + strip + 132px`, with `right:62px` keeping it off the
+rail. This is a deliberate departure from Sora's exact position.
+
+Verified by assertion rather than by eye: with the strip forced on and a long
+toast showing, install × caption, install × chip, install × dots, toast ×
+caption, toast × chip and toast × rail all report no intersection.
+
+## Still open
 
 **The claim page carries a lot of empty black.** The claim is centered in a page
 padded 64px top and 190px above the nav. Sora fills that area with video. This

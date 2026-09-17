@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<title>Cracked</title>
+<title>Spill</title>
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Cracked">
+<meta name="apple-mobile-web-app-title" content="Spill">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" href="./icon-192.png">
@@ -18,6 +18,8 @@
     --card:#0e0e0e; --line:#242424;
     --yolk:#F2A900; --ok:#30C860; --red:#FF453A;
     --nav:64px;
+    /* claimed by the install strip; the record rides above it */
+    --strip:0px;
     --sat:env(safe-area-inset-top);
     --top:env(safe-area-inset-top);
     --bot:env(safe-area-inset-bottom);
@@ -43,6 +45,8 @@
     text-align:center;padding:5px 12px;padding-top:calc(5px + var(--sat));
   }
   body.has-banner{--top:calc(var(--sat) + 24px)}
+  /* a fallback only; showInstall() measures the strip and overrides this */
+  body.has-install{--strip:58px}
 
   /* ---- views ---- */
   main{position:fixed;inset:0}
@@ -67,7 +71,7 @@
     flex:0 0 100%;width:100%;height:100%;
     scroll-snap-align:start;scroll-snap-stop:always;
     overflow-y:auto;-webkit-overflow-scrolling:touch;
-    padding:calc(var(--top) + 64px) 76px calc(var(--nav) + var(--bot) + 190px) 20px;
+    padding:calc(var(--top) + 64px) 76px calc(var(--nav) + var(--bot) + var(--strip) + 190px) 20px;
   }
   .page.claim{display:flex;flex-direction:column;justify-content:center}
   .page .lbl{font-size:10px;color:var(--dim);margin-bottom:14px}
@@ -119,7 +123,7 @@
   /* ---- right action rail ---- */
   .rail{
     position:absolute;right:8px;z-index:12;
-    bottom:calc(var(--nav) + var(--bot) + 96px);
+    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 96px);
     display:flex;flex-direction:column;align-items:center;gap:19px;
   }
   .rail button{width:38px;height:38px;display:grid;place-items:center}
@@ -130,7 +134,7 @@
   /* ---- bottom-left caption block ---- */
   .cap{
     position:absolute;left:16px;z-index:12;
-    right:62px;bottom:calc(var(--nav) + var(--bot) + 34px);
+    right:62px;bottom:calc(var(--nav) + var(--bot) + var(--strip) + 34px);
   }
   .cap .who{display:flex;align-items:center;gap:9px;margin-bottom:7px}
   .cap .av{width:32px;height:32px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
@@ -152,16 +156,16 @@
   /* ---- page dots ---- */
   .dots{
     position:absolute;left:0;right:0;z-index:12;
-    bottom:calc(var(--nav) + var(--bot) + 12px);
+    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 12px);
     display:flex;justify-content:center;gap:6px;pointer-events:none;
   }
   .dots i{width:5px;height:5px;border-radius:999px;background:#4a4a4a;transition:background .18s}
   .dots i.on{background:#fff}
 
   /* ---- archive grid ---- */
-  #archive{padding:calc(var(--top) + 54px) 12px calc(var(--nav) + var(--bot) + 24px)}
+  #archive{padding:calc(var(--top) + 54px) 12px calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-  .cell{aspect-ratio:9/16;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden;
+  .cell{aspect-ratio:1;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden;
         display:flex;flex-direction:column;align-items:stretch}
   .cell p{font-size:9.5px;line-height:1.32;color:#c2c2c2;overflow:hidden;max-height:74%}
   .cell i{position:absolute;left:9px;bottom:8px;width:6px;height:6px;border-radius:999px}
@@ -228,12 +232,14 @@
   .err{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
   .okmsg{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
 
-  /* ---- toast: Sora's status pill -- bottom right, riding above the nav ---- */
+  /* ---- toast: Sora's status pill, lifted ---- */
+  /* Sora's sits at the caption's height because it says one word. These say
+     sentences, so at that height they cover the byline and the status chip.
+     It rides above the caption instead, and right:62px keeps it off the rail. */
   #toast{
-    position:fixed;z-index:70;right:14px;
-    /* clears the page dots, which end at nav + bot + 17px */
-    bottom:calc(var(--nav) + var(--bot) + 26px);
-    max-width:calc(100% - 28px);
+    position:fixed;z-index:70;right:62px;
+    bottom:calc(var(--nav) + var(--bot) + var(--strip) + 132px);
+    max-width:calc(100% - 76px);
     background:#1c1c1c;border-radius:999px;padding:10px 14px;
     display:none;align-items:center;gap:9px;font-size:13.5px;
     box-shadow:0 8px 28px rgba(0,0,0,.5);
@@ -263,9 +269,9 @@
 
   #install{
     display:none;position:fixed;left:14px;right:14px;z-index:35;
-    bottom:calc(var(--nav) + var(--bot) + 14px);
-    background:#fff;color:#000;padding:13px 15px;border-radius:14px;
-    align-items:center;gap:12px;font-size:13px;
+    bottom:calc(var(--nav) + var(--bot) + 8px);
+    background:#fff;color:#000;padding:8px 9px 8px 14px;border-radius:999px;
+    align-items:center;gap:9px;font-size:13px;line-height:1.25;
   }
   #install.on{display:flex}
   #install .btn{height:32px;background:#000;color:#fff;border-color:#000;font-size:12px}
@@ -306,7 +312,7 @@
     <p>No claims about private individuals. No words about intent. You cannot source what someone meant, so it never gets published.</p>
     <h2>Reporting a record</h2>
     <p>Every record carries a report control under the ••• menu. A report names what is wrong with the record, and it is read by a person. Records found to be unsourced or misattributed are removed.</p>
-    <p>Contact: cracked@codexfoundry.com</p>
+    <p>Contact: spill@codexfoundry.com</p>
   </section>
 </main>
 
@@ -336,7 +342,7 @@
   <div class="sheet">
     <div class="handle"></div>
     <h3>File a record</h3>
-    <p class="intro">Cracked does not take rumors. A record is a public claim plus documents anyone can open.</p>
+    <p class="intro">Spill does not take rumors. A record is a public claim plus documents anyone can open.</p>
 
     <div class="field"><label class="mono">The claim, verbatim</label>
       <textarea id="fClaim" rows="2" placeholder="&quot;We crossed $4M ARR last month.&quot;"></textarea></div>
@@ -370,7 +376,7 @@
 </div>
 
 <div id="install">
-  <span id="installMsg" style="flex:1">Add Cracked to your home screen.</span>
+  <span id="installMsg" style="flex:1">Add Spill to your home screen</span>
   <button class="btn" id="installGo">Install</button>
   <button class="btn" id="installNo" style="background:none;color:#000;border-color:#ccc">Later</button>
 </div>
@@ -598,7 +604,7 @@ function act(name, r){
   if (name === 'copytext'){ navigator.clipboard?.writeText(recordText(r)); toast('Copied the record'); return; }
   if (name === 'copylink'){ navigator.clipboard?.writeText(location.href); toast('Copied post link'); return; }
   if (name === 'share'){
-    const data = { title:'Cracked', text:`"${r.claim}" — ${r.status}${live ? '' : ' [sample]'}`, url: location.href };
+    const data = { title:'Spill', text:`"${r.claim}" — ${r.status}${live ? '' : ' [sample]'}`, url: location.href };
     if (navigator.share) navigator.share(data).then(() => toast('Sent post link')).catch(() => {});
     else { navigator.clipboard?.writeText(location.href); toast('Copied post link'); }
     return;
@@ -732,28 +738,48 @@ const native = !!(window.Capacitor && window.Capacitor.isNativePlatform && windo
 const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
          || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-function dismissed(){ try { return localStorage.getItem('cracked.install') === 'no'; } catch (e) { return false; } }
-function dismiss(){ try { localStorage.setItem('cracked.install', 'no'); } catch (e) {} }
+function dismissed(){ try { return localStorage.getItem('spill.install') === 'no'; } catch (e) { return false; } }
+/* showing and hiding go through here so the strip and the space it claims
+   can never disagree */
+function showInstall(){
+  $('#install').classList.add('on');
+  document.body.classList.add('has-install');
+  /* measure the strip rather than assume it: the iOS copy is two lines and the
+     Chrome copy is one, and the record has to clear whichever is showing */
+  requestAnimationFrame(() => {
+    const h = $('#install').offsetHeight;
+    if (h) document.body.style.setProperty('--strip', (h + 16) + 'px');
+  });
+}
+function hideInstall(){
+  $('#install').classList.remove('on');
+  document.body.classList.remove('has-install');
+  document.body.style.removeProperty('--strip');
+}
+addEventListener('resize', () => {
+  if (document.body.classList.contains('has-install')) showInstall();
+});
+function dismiss(){ try { localStorage.setItem('spill.install', 'no'); } catch (e) {} }
 
 let deferred = null;
 addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); deferred = e;
-  if (!standalone && !native && !dismissed()) $('#install').classList.add('on');
+  if (!standalone && !native && !dismissed()) showInstall();
 });
 
 if (iOS && !standalone && !native && !dismissed()) {
-  $('#installMsg').innerHTML = 'Install Cracked: tap Share, then <b>Add to Home Screen</b>.';
+  $('#installMsg').innerHTML = 'Install Spill: tap Share, then <b>Add to Home Screen</b>.';
   $('#installGo').hidden = true;
   $('#installNo').textContent = 'Got it';
-  $('#install').classList.add('on');
+  showInstall();
 }
 
 $('#installGo').addEventListener('click', async () => {
-  $('#install').classList.remove('on');
+  hideInstall();
   if (deferred) { deferred.prompt(); await deferred.userChoice; deferred = null; }
 });
-$('#installNo').addEventListener('click', () => { $('#install').classList.remove('on'); dismiss(); });
-addEventListener('appinstalled', () => { $('#install').classList.remove('on'); dismiss(); });
+$('#installNo').addEventListener('click', () => { hideInstall(); dismiss(); });
+addEventListener('appinstalled', () => { hideInstall(); dismiss(); });
 
 markSampleState(); renderFeed(); renderArchive();
 loadRecords().then(() => { markSampleState(); renderFeed(); renderArchive(); });

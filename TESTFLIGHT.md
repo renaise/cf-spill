@@ -1,4 +1,4 @@
-# Cracked → TestFlight
+# Spill → TestFlight
 
 TestFlight will not take a PWA. It distributes signed native binaries only, so the
 web app has to be wrapped in a real iOS app before any of this applies.
@@ -20,18 +20,18 @@ things: a way to filter objectionable content, a mechanism for users to report i
 a way to block abusive users, and published contact information for the developer.
 Apple enforces this and the expectation is that reports are acted on within 24 hours.
 
-Cracked currently has none of them. A report button and a named takedown process are
+Spill currently has none of them. A report button and a named takedown process are
 prerequisites for submission, not follow-ups. Budget this as real work.
 
 **2. Guideline 4.2 — minimum functionality.** An app that is a web view wrapped around
 a website gets rejected as not providing app-like experience. The wrapper needs genuine
 native capability to clear it: push notifications when a record you filed gets a source,
-a share extension so a claim can be sent to Cracked from Twitter, offline reading of the
+a share extension so a claim can be sent to Spill from Twitter, offline reading of the
 archive. The share extension is the strongest one and also the best product feature, so
 build that.
 
 **3. Platform risk, which is the strategic one.** Apple has removed apps that facilitate
-harassment of named individuals. Cracked publishes checkable claims about real founders,
+harassment of named individuals. Spill publishes checkable claims about real founders,
 and a named subject with a lawyer has an obvious lever: complain to Apple rather than sue
 you. The PWA has no such lever, which is why it stays the primary surface regardless of
 what happens with the native build. **Do not let the native app become the only way in.**
@@ -71,7 +71,7 @@ change to `app/`, run:
 npx cap sync ios
 ```
 
-The bundle ID is `com.codexfoundry.cracked`. It must match the App Store Connect record
+The bundle ID is `com.codexfoundry.spill`. It must match the App Store Connect record
 exactly and it cannot be changed later.
 
 Capacitor 7 uses Swift Package Manager, so there is no Podfile and no `pod install`.
@@ -80,7 +80,7 @@ Capacitor 7 uses Swift Package Manager, so there is no Podfile and no `pod insta
 
 Set in `ios/App/App/Info.plist` and the project file, verified by a simulator build:
 
-- Display name Cracked, version 1.0, build 1, deployment target iOS 15.
+- Display name Spill, version 1.0, build 1, deployment target iOS 15.
 - Portrait only on both iPhone and iPad. The feed is a vertical pager; landscape has
   no design.
 - Light status bar text, set globally rather than per view controller.
@@ -89,7 +89,7 @@ Set in `ios/App/App/Info.plist` and the project file, verified by a simulator bu
 - `arm64` in `UIRequiredDeviceCapabilities`, replacing the template's `armv7`.
 - `ITSAppUsesNonExemptEncryption` false, so uploads stop asking about export
   compliance.
-- App icon and splash generated at 1024 and 2732 from the Cracked mark.
+- App icon and splash generated at 1024 and 2732 from the Spill mark.
 
 **What is not done, and only you can do it:** Signing & Capabilities needs your team
 selected. That requires the Apple Developer account from step 1.

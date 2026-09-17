@@ -1,4 +1,4 @@
-// Cracked app shell.
+// Spill app shell.
 //
 // Navigations are NETWORK-FIRST on purpose. v1 was cache-first for everything with a
 // fixed cache name, which pinned every existing install to the first build it ever
@@ -7,7 +7,7 @@
 // by name in practice, and they fall back to the network when missing.
 //
 // Bump SHELL whenever the cached asset list changes.
-const SHELL = 'cracked-shell-v3';
+const SHELL = 'spill-shell-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
