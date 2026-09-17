@@ -132,6 +132,10 @@
     font-size:12.5px;font-weight:500;color:var(--ink-2);min-width:0;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
+  .phead .hd{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11px;color:var(--ink-3);flex:none;
+  }
   .phead .tm{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:11px;color:var(--ink-3);flex:none;margin-left:auto;padding-left:10px;
@@ -177,6 +181,15 @@
     background:var(--raise);border:1px solid var(--rule);padding:15px 14px;
   }
   #detail .sec{margin-top:30px;padding-top:22px;border-top:1px solid var(--rule)}
+  #detail .where{
+    display:flex;align-items:center;gap:10px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11.5px;line-height:1.5;color:var(--ink);text-decoration:none;
+    border:1px solid var(--rule);background:var(--raise);padding:13px 14px;
+    word-break:break-all;
+  }
+  #detail .where svg{width:14px;height:14px;flex:none;stroke:var(--ink-3);stroke-width:1.7;fill:none}
+  #detail .wnote{margin-top:9px;font-size:12.5px;color:var(--ink-3);line-height:1.5}
   #detail .flip{font-size:14px;color:var(--ink-2);line-height:1.55}
   #back{
     position:fixed;z-index:26;left:12px;top:calc(var(--top) + 8px);
@@ -477,64 +490,77 @@ provenance.
 window.SPILL_API = window.SPILL_API || 'https://spill-api.delicate-cloud-00a7.workers.dev';
 const API = window.SPILL_API || '';
 
+// Fictional. The handles and post ids below are invented, not scraped, and do not
+// resolve -- nothing here was pulled from a live account. They exist so the feed
+// has the shape of real traffic, where these claims actually get made. Every one
+// carries the SAMPLE field, and the banner stays up while they are showing.
 const SAMPLES = [
   {
     claim: "We crossed $4M ARR last month, fully bootstrapped.",
-    who: "Dex Mallory, founder, Nullset", made: "Conference keynote, 2026-08-14",
+    who: "Dex Mallory, founder, Nullset", handle: "@nullset_dex",
+    made: "X post, 2026-08-14", url: "https://x.com/nullset_dex/status/1824417700000000001",
     status: "CONTRADICTED",
-    doc: "DELAWARE FRANCHISE TAX REPORT\nNullset Labs Inc. · filed 2026-03-02\n\nIncorporation date ..... 2026-01-19\nAuthorized shares ...... 10,000,000\n\nFORM D (SEC) · filed 2026-02-28\nTotal offering amount .. $2,200,000\nTotal amount sold ...... $2,200,000",
+    doc: "DELAWARE FRANCHISE TAX REPORT\nNullset Labs Inc. · filed 2026-03-02\n\n  Incorporation date ..... 2026-01-19\n  Authorized shares ...... 10,000,000\n\nFORM D (SEC) · filed 2026-02-28\n\n  Total offering amount .. $2,200,000\n  Total amount sold ...... $2,200,000",
     flip: "A bank statement or an audited revenue figure covering the period."
   },
   {
     claim: "Team of 40 engineers shipping every day.",
-    who: "Perrin Oyelaran, cofounder, Havenline", made: "Podcast, 2026-07-02",
+    who: "Perrin Oyelaran, cofounder, Havenline", handle: "@perrinbuilds",
+    made: "X post, 2026-07-02", url: "https://x.com/perrinbuilds/status/1810299400000000002",
     status: "UNSUPPORTED",
-    doc: "ARCHIVED TEAM PAGE\nhavenline.example · snapshot 2026-06-28\n  Named staff listed ......... 9\n\nLIVE JOB POSTINGS · 2026-07-02\n  Open engineering roles ..... 3\n\nNo public document states a headcount\neither way.",
-    flip: "A company org chart, a payroll summary, or a staff page listing 40 engineers."
+    doc: "ARCHIVED TEAM PAGE\nhavenline.example · snapshot 2026-06-28\n\n  Named staff listed ......... 9\n\nLIVE JOB POSTINGS · 2026-07-02\n\n  Open engineering roles ..... 3\n\nNo public document states a headcount\neither way.",
+    flip: "An org chart, a payroll summary, or a staff page listing 40 engineers."
   },
   {
     claim: "Backed by four of the top ten funds.",
-    who: "Ines Vartan, founder, Groundstate", made: "Company blog, 2026-05-30",
+    who: "Ines Vartan, founder, Groundstate", handle: "@ines_groundstate",
+    made: "X post, 2026-05-30", url: "https://x.com/ines_groundstate/status/1798104200000000003",
     status: "SUPPORTED",
     doc: "FORM D (SEC) · filed 2026-06-11\nGroundstate Technologies Inc.\n\nRelated persons / investors listed:\n  four institutional entities named,\n  each matching a fund on the cited\n  top-ten list referenced in the post.",
     flip: "Nothing outstanding. The filing names the investors."
   },
   {
     claim: "Our model beats every competitor on internal benchmarks.",
-    who: "Tobin Reisz, founder, Alloyd", made: "Product launch post, 2026-09-01",
+    who: "Tobin Reisz, founder, Alloyd", handle: "@tobinreisz",
+    made: "X post, 2026-09-01", url: "https://x.com/tobinreisz/status/1830557900000000004",
     status: "UNCHECKABLE",
     doc: "No public document exists.\n\nThe benchmark is described as internal.\nNo methodology, dataset, or result\ntable has been published, and no third\nparty has reproduced it.\n\nUNCHECKABLE is not a judgment. It is a\nstatement about what is on the record.",
-    flip: "Publication of the benchmark methodology and results, or a third-party reproduction."
+    flip: "Publication of the methodology and results, or a third-party reproduction."
   },
   {
     claim: "Profitable since month nine, no outside capital.",
-    who: "Wren Adeyemi, founder, Saltpath", made: "Investor update, 2026-08-30",
+    who: "Wren Adeyemi, founder, Saltpath", handle: "@wrensaltpath",
+    made: "X post, 2026-08-30", url: "https://x.com/wrensaltpath/status/1829833100000000005",
     status: "CONTRADICTED",
-    doc: "FORM D (SEC) · filed 2026-04-17\nSaltpath Systems Inc.\n\nTotal offering amount ...... $6,000,000\nTotal amount sold .......... $4,750,000\nMinimum investment ......... $250,000\n\nThe filing postdates month nine and\nrecords capital raised from outside\ninvestors. It says nothing about\nprofitability either way.",
+    doc: "FORM D (SEC) · filed 2026-04-17\nSaltpath Systems Inc.\n\n  Total offering amount ...... $6,000,000\n  Total amount sold .......... $4,750,000\n  Minimum investment ......... $250,000\n\nThe filing postdates month nine and\nrecords capital raised from outside\ninvestors. It says nothing about\nprofitability either way.",
     flip: "An income statement covering the period, or a withdrawal of the no-capital half of the claim."
   },
   {
     claim: "Three of the five largest US health systems are customers.",
-    who: "Callum Bright, CEO, Meridian Health AI", made: "Sales deck, 2026-06-19",
+    who: "Callum Bright, CEO, Meridian Health AI", handle: "@callumbright",
+    made: "X post, 2026-06-19", url: "https://x.com/callumbright/status/1803422600000000006",
     status: "UNSUPPORTED",
-    doc: "PRESS RELEASES · meridianhealth.example\n  Named health-system customers ... 0\n\nPUBLIC PROCUREMENT RECORDS\n  Matching awarded contracts ...... 0\n\nCustomer relationships are routinely\nconfidential, so an absence here is\nweak evidence in either direction.",
+    doc: "PRESS RELEASES · meridianhealth.example\n\n  Named health-system customers ... 0\n\nPUBLIC PROCUREMENT RECORDS\n\n  Matching awarded contracts ...... 0\n\nCustomer relationships are routinely\nconfidential, so an absence here is\nweak evidence in either direction.",
     flip: "A named reference customer, a signed contract, or a procurement record."
   },
   {
     claim: "We were the first to ship this on-device.",
-    who: "Sunniva Holt, cofounder, Parseq", made: "Launch thread, 2026-09-08",
+    who: "Sunniva Holt, cofounder, Parseq", handle: "@sunnivaholt",
+    made: "X post, 2026-09-08", url: "https://x.com/sunnivaholt/status/1833094800000000007",
     status: "CONTRADICTED",
-    doc: "ARCHIVED RELEASE NOTES\nterrafirma.example/changelog\n  Same capability, on-device ... 2026-05-04\n\nParseq launch date ............. 2026-09-08\n\nA prior public release of the same\ncapability predates the claim by four\nmonths.",
-    flip: "Evidence of an earlier Parseq release, or a narrower reading of \"this\" that the prior release does not meet."
+    doc: "ARCHIVED RELEASE NOTES\nterrafirma.example/changelog\n\n  Same capability, on-device ... 2026-05-04\n\nParseq launch ................. 2026-09-08\n\nA prior public release of the same\ncapability predates the claim by four\nmonths.",
+    flip: "Evidence of an earlier Parseq release, or a narrower reading of \"this\" the prior release does not meet."
   },
   {
     claim: "Our retention is best in category.",
-    who: "Oz Farrow, founder, Lanternside", made: "Fundraise memo, 2026-07-25",
+    who: "Oz Farrow, founder, Lanternside", handle: "@ozfarrow",
+    made: "X post, 2026-07-25", url: "https://x.com/ozfarrow/status/1818627300000000008",
     status: "UNCHECKABLE",
     doc: "No public document exists.\n\n\"Best in category\" requires both a\ndefined category and published\nretention figures for its members.\nNeither is on the public record.\n\nThe claim cannot be checked, which is\nnot the same as it being false.",
-    flip: "A defined peer set with published retention figures, or a third-party category benchmark."
+    flip: "A defined peer set with published retention figures, or a third-party benchmark."
   }
 ];
+
 
 
 const $ = s => document.querySelector(s);
@@ -637,6 +663,7 @@ function renderFeed(){
     <article class="post s-${r.status}" data-i="${i}">
       <div class="phead">
         <span class="nm">${esc(r.who)}</span>
+        ${r.handle ? `<span class="hd">${esc(r.handle)}</span>` : ''}
         <span class="tm">${esc((r.made || '').split(', ').pop())}</span>
       </div>
       <button class="ptitle" data-open>${esc(r.claim)}</button>
@@ -659,11 +686,19 @@ function renderDetail(r){
     <div class="s-${r.status}">
       <div class="lbl mono">The claim</div>
       <div class="claimtext">${esc(r.claim)}</div>
-      <div class="meta">${esc(r.who)}<br>${esc(r.made)}</div>
+      <div class="meta">${esc(r.who)}${r.handle ? ` · ${esc(r.handle)}` : ''}<br>${esc(r.made)}</div>
       <div class="tags" style="margin-top:18px">
         <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
         ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
       </div>
+      ${r.url ? `<div class="sec">
+        <div class="lbl mono">Where it was said</div>
+        <a class="where" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
+          <span>${esc(r.url)}</span>
+          <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </a>
+        ${live ? '' : '<p class="wnote">This link is fictional and does not resolve.</p>'}
+      </div>` : ''}
       <div class="sec">
         <div class="lbl mono">The source</div>
         <div class="doc">${esc(r.doc)}</div>

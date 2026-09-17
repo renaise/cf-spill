@@ -47,6 +47,21 @@ live archive. Deploy with `NODE_OPTIONS= npx wrangler deploy` from `api/`, and
 `NODE_OPTIONS=` is required on this machine or wrangler dies on a Node preload
 error.
 
+## The sample feed
+
+Eight sample records, written as claims made in X posts, because that is where
+these claims actually get made. Each carries a handle, an X post URL, and a
+public document that checks it.
+
+Nothing was pulled from X. `api.x.com` returns 401 with no credentials on this
+machine and `x.com/search` serves only the SPA shell, so a live fetch is not
+available here. The handles and post ids are invented and do not resolve, the
+record's own detail screen says so under the link, and the SAMPLE banner and the
+per-card SAMPLE field both stay up while they are showing.
+
+If these ever stop being samples, the handles need checking against real
+accounts first.
+
 ## Screens
 
 Four records load from sample data. Each record is one full screen and pages
