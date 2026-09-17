@@ -400,11 +400,13 @@
 </nav>
 
 <script>
-// Records come from the API when one is configured and reachable. When it is not,
-// the app runs on the fictional samples below and the SAMPLE banner stays up. The
-// banner is only removed when real records actually loaded -- never optimistically,
-// because a banner that lies about what you are reading is worse than no banner.
-const API = window.CRACKED_API || '';
+// Records come from the archive. The samples below are the offline fallback, and
+// they only appear when the archive cannot be reached at all. An archive that
+// answers is live even when it is empty -- an empty archive is a true statement
+// about the world, and showing invented records in its place would not be. The
+// banner is driven off the same flag, so it can never describe the wrong thing.
+window.SPILL_API = window.SPILL_API || 'https://spill-api.delicate-cloud-00a7.workers.dev';
+const API = window.SPILL_API || '';
 
 const SAMPLES = [
   {
@@ -471,7 +473,9 @@ async function loadRecords(){
     const res = await fetch(API.replace(/\/$/, '') + '/records', { headers: { accept: 'application/json' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (!Array.isArray(data.records) || data.records.length === 0) return; // keep samples
+    if (!Array.isArray(data.records)) throw new Error('malformed archive response');
+    // Reached it. From here on the screen shows the archive, empty or not.
+    live = true;
     records = data.records.map(r => ({
       id: r.id,
       claim: r.claim,
@@ -484,9 +488,9 @@ async function loadRecords(){
         ? r.checks.map(c => `${c.what}\n${c.says}\n${c.url}`).join('\n\n')
         : 'No corroborating document is on file.\n\nThe original claim is archived at:\n' + r.made_url,
     }));
-    live = true;
   } catch (e) {
-    // Offline or API down. Samples stay, banner stays. Nothing is silently faked.
+    // Offline or the archive is down. Samples stay, banner stays, and the SAMPLE
+    // chip stays on every card. Nothing is silently faked.
   }
 }
 
@@ -498,8 +502,21 @@ const MARK = `<svg viewBox="0 0 100 100" aria-hidden="true">
 function renderFeed(){
   const rs = visible();
   if (!rs.length){
-    $('#feed').innerHTML = `<article class="rec"><div class="page"><div class="lbl mono">Nothing here</div>
-      <div class="claimtext" style="font-size:24px">No records carry this status yet.</div></div></article>`;
+    // An empty archive and an empty filter are different facts, and saying the
+    // wrong one would send a person looking for a record that was never filed.
+    const bare = live && !records.length;
+    const head = bare ? 'The archive is open' : 'Nothing here';
+    const line = bare
+      ? 'No records have been filed yet.'
+      : 'No records carry this status yet.';
+    const sub = bare
+      ? 'A record is a public claim plus a document anyone can open. File the first one with the + button.'
+      : '';
+    $('#feed').innerHTML = `<article class="rec"><div class="page claim">
+      <div class="lbl mono">${head}</div>
+      <div class="claimtext" style="font-size:24px">${line}</div>
+      ${sub ? `<p style="margin-top:16px;font-size:14px;color:#8a8a8a;line-height:1.5;max-width:30ch">${sub}</p>` : ''}
+      </div></article>`;
     return;
   }
   $('#feed').innerHTML = rs.map((r, i) => `
@@ -553,8 +570,11 @@ function renderFeed(){
 
 function renderArchive(){
   const rs = visible();
+  const head = rs.length
+    ? `${rs.length} record${rs.length === 1 ? '' : 's'} · ${live ? 'archive' : 'sample'}`
+    : (live ? 'No records filed yet' : 'No sample records');
   $('#archive').innerHTML =
-    `<div class="ghead mono">${rs.length} records · ${live ? 'archive' : 'sample'}</div><div class="grid">` +
+    `<div class="ghead mono">${head}</div><div class="grid">` +
     rs.map((r, i) => `<button class="cell s-${r.status}" data-jump="${i}"><p>${esc(r.claim)}</p><i></i></button>`).join('') +
     `</div>`;
 }

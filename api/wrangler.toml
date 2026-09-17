@@ -6,7 +6,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "spill"
-database_id = "FILL_AFTER_d1_create"
+database_id = "8561d078-d7bf-4f39-988c-60af8ff1ab1e"
 
 [vars]
 # Origins allowed to call this API. Comma separated, no trailing slash.
