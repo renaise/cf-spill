@@ -24,6 +24,29 @@ It carries no drawn notch. A notch sat over the sample banner and cut the word
 FICTIONAL out of it. The banner is the one thing on the screen that may not be
 obscured, so the decoration went.
 
+## The archive is real
+
+`spill-api` is deployed on the LLC Cloudflare account
+(`c672230f...`, token at `~/.cf-llc-token`) at
+`https://spill-api.delicate-cloud-00a7.workers.dev`, with D1 database `spill`
+(`8561d078-d7bf-4f39-988c-60af8ff1ab1e`) and the schema applied. The app points
+at it through `window.SPILL_API`.
+
+It holds no records. The app says so: the SAMPLE banner is down, the feed reads
+"The archive is open / No records have been filed yet", and the archive header
+reads "No records filed yet". An archive that answers counts as live even with
+zero rows, because an empty archive is a true statement and invented records in
+its place would not be. The samples are only the offline fallback now, reached
+when the archive cannot be reached at all.
+
+Filing the first records is a person's job, not the agent's. `/cf-spill`
+retrieves and structures a claim record; a human publishes it.
+
+The write path is proven by `api/test.mjs` (12 passing), not by writing to the
+live archive. Deploy with `NODE_OPTIONS= npx wrangler deploy` from `api/`, and
+`NODE_OPTIONS=` is required on this machine or wrangler dies on a Node preload
+error.
+
 ## Screens
 
 Four records load from sample data. Each record is one full screen and pages

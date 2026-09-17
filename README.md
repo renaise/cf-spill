@@ -38,6 +38,15 @@ To serve from a bare `cf-spill.github.io`, the repo would need to be renamed to
 one-command changes. Every path in `index.html` is relative, so the page renders
 correctly at any URL either way.
 
+The archive API is a separate deploy. From `api/`:
+
+```bash
+NODE_OPTIONS= npx wrangler deploy
+```
+
+It runs as `spill-api` on the LLC Cloudflare account with D1 database `spill`.
+The app finds it through `window.SPILL_API`.
+
 A custom domain is set in `CNAME` when one is registered.
 
 Codex Foundry, 2026.
