@@ -15,110 +15,162 @@
 <style>
   :root{
     --bg:#000; --fg:#fff; --dim:#8a8a8a; --dimmer:#5a5a5a;
-    --card:#141414; --line:#242424;
-    --yolk:#F2A900; --ok:#30C860;
-    --nav:72px;
+    --card:#0e0e0e; --line:#242424;
+    --yolk:#F2A900; --ok:#30C860; --red:#FF453A;
+    --nav:64px;
+    --top:env(safe-area-inset-top);
+    --bot:env(safe-area-inset-bottom);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   [hidden]{display:none!important}
-  html,body{height:100%;overscroll-behavior-y:none}
+  html,body{height:100%;overscroll-behavior:none}
   body{
     background:var(--bg);color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased;
-    display:flex;flex-direction:column;
+    overflow:hidden;
   }
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase}
 
-  /* ---- sample banner: required, never removable ---- */
+  /* ---- sample banner: required, never removable while samples are showing ---- */
   #sample{
-    flex:none;background:var(--yolk);color:#000;
+    position:fixed;top:0;left:0;right:0;z-index:60;
+    background:var(--yolk);color:#000;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-    text-align:center;padding:5px 12px calc(5px);
-    padding-top:calc(5px + env(safe-area-inset-top));
+    text-align:center;padding:5px 12px;padding-top:calc(5px + var(--top));
   }
-
-  /* ---- header ---- */
-  header{flex:none;padding:10px 16px 0}
-  .brand{display:flex;align-items:center;justify-content:center;gap:8px;position:relative;height:30px}
-  .brand svg{width:22px;height:22px;display:block}
-  .brand b{font-size:16px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
-  .tabs{display:flex;justify-content:center;gap:22px;margin-top:10px}
-  .tabs button{font-size:14px;font-weight:600;color:var(--dimmer);padding:4px 0}
-  .tabs button[aria-selected="true"]{color:var(--fg)}
+  body.has-banner{--top:calc(env(safe-area-inset-top) + 20px)}
 
   /* ---- views ---- */
-  main{flex:1 1 auto;min-height:0;position:relative}
+  main{position:fixed;inset:0}
   .view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
   .view.on{display:block}
 
-  /* ---- feed: one record per page ---- */
-  /* BeReal anatomy: poster row, fixed-ratio stage, reaction row, comment line.
-     The stage must NOT be flex:1 -- stretching it to fill leaves a dead middle. */
-  #feed{scroll-snap-type:y mandatory}
+  /* ---- feed: full-bleed, one record per page ---- */
+  #feed{scroll-snap-type:y mandatory;overscroll-behavior-y:contain}
   .rec{
     scroll-snap-align:start;scroll-snap-stop:always;
-    min-height:100%;padding:8px 10px calc(var(--nav) + 10px);
-    display:flex;flex-direction:column;
+    height:100%;position:relative;overflow:hidden;
   }
-  .poster{display:flex;align-items:center;gap:9px;padding:2px 4px 9px}
-  .poster .av{width:30px;height:30px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
-  .poster .av svg{width:17px;height:17px}
-  .poster .nm{font-size:13.5px;font-weight:600;line-height:1.2}
-  .poster .tm{font-size:11.5px;color:var(--dim);line-height:1.2}
 
-  .stage{position:relative;width:100%;aspect-ratio:3/4;background:var(--card);border-radius:16px;overflow:hidden;flex:none}
-  .face{position:absolute;inset:0;padding:22px 18px;display:flex;flex-direction:column;overflow-y:auto}
-  .face[hidden]{display:none}
-  .face[data-face="claim"]{justify-content:center;padding:0 52px 0 18px}
-  .face[data-face="doc"]{justify-content:flex-start;padding-top:144px}
-  .face .lbl{font-size:10px;color:var(--dim);margin-bottom:10px}
-  .claimtext{font-size:clamp(26px,8vw,38px);line-height:1.13;font-weight:600;letter-spacing:-.032em}
-  .who{margin-top:14px;font-size:12.5px;color:var(--dim)}
-  .doc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;color:#d6d6d6;white-space:pre-wrap}
-
-  .pip{
-    position:absolute;top:10px;left:10px;width:92px;height:122px;
-    background:#000;border:2px solid #000;border-radius:11px;
-    padding:8px;overflow:hidden;text-align:left;display:block;
+  /* horizontal pager: claim, then source */
+  .pages{
+    position:absolute;inset:0;
+    display:flex;overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x mandatory;scrollbar-width:none;
   }
-  .pip .lbl{font-size:8px;color:var(--yolk);margin-bottom:4px}
-  .pip p{font-size:8.5px;line-height:1.32;color:#bbb;overflow:hidden}
-
-  .rail{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:9px}
-  .rail button{width:33px;height:33px;display:grid;place-items:center;border-radius:999px;background:rgba(0,0,0,.5)}
-  .rail svg{width:18px;height:18px;stroke:#fff;stroke-width:1.7;fill:none}
-
-  /* reaction row: BeReal's RealMoji strip, carrying status instead of faces */
-  .chips{display:flex;align-items:center;gap:7px;padding:13px 4px 0;flex:none}
-  .chip{
-    display:inline-flex;align-items:center;gap:6px;height:31px;padding:0 12px;
-    border-radius:999px;border:1px solid var(--line);background:#111;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.1em;
+  .pages::-webkit-scrollbar{display:none}
+  .page{
+    flex:0 0 100%;width:100%;height:100%;
+    scroll-snap-align:start;scroll-snap-stop:always;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:calc(var(--top) + 64px) 76px calc(var(--nav) + var(--bot) + 190px) 20px;
   }
-  .chip .dot{width:7px;height:7px;border-radius:999px;flex:none}
-  .chip.samp{color:var(--dimmer);border-style:dashed}
-  .s-SUPPORTED .chip .dot{background:var(--ok)} .s-SUPPORTED .chip.st{color:var(--ok);border-color:#1c4a2c}
-  .s-CONTRADICTED .chip .dot{background:var(--yolk)} .s-CONTRADICTED .chip.st{color:var(--yolk);border-color:#4a3a0e}
-  .s-UNSUPPORTED .chip .dot{background:var(--dim)} .s-UNSUPPORTED .chip.st{color:var(--dim)}
-  .s-UNCHECKABLE .chip .dot{background:var(--dimmer)} .s-UNCHECKABLE .chip.st{color:var(--dimmer)}
+  .page.claim{display:flex;flex-direction:column;justify-content:center}
+  .page .lbl{font-size:10px;color:var(--dim);margin-bottom:14px}
+  .claimtext{font-size:clamp(27px,7.6vw,38px);line-height:1.14;font-weight:600;letter-spacing:-.033em}
+  .doc{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;line-height:1.62;color:#d6d6d6;white-space:pre-wrap;
+  }
 
-  /* comment line: BeReal's "View comment" slot */
-  .flip{padding:11px 4px 0;font-size:13px;color:var(--dim);line-height:1.45;flex:none}
-  .flip b{color:#c9c9c9;font-weight:500}
+  /* ---- top overlay: feed selector + people ---- */
+  #top{
+    position:fixed;left:0;right:0;top:0;z-index:25;
+    padding:calc(var(--top) + 8px) 14px 0;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;height:calc(var(--top) + 44px);
+  }
+  #top>*{pointer-events:auto}
+  #sel{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:16px;font-weight:600;letter-spacing:-.01em;
+    padding:5px 10px;border-radius:999px;
+  }
+  #sel svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none;opacity:.85}
+  #sel.pill{background:#1c1c1c;font-size:14px}
+  #top .ico{
+    position:absolute;right:12px;top:calc(var(--top) + 10px);
+    width:34px;height:34px;display:grid;place-items:center;
+  }
+  #top .ico svg{width:23px;height:23px;stroke:#fff;stroke-width:1.8;fill:none}
+
+  /* feed-selector menu */
+  #menu{
+    position:fixed;z-index:45;inset:0;display:none;
+  }
+  #menu.on{display:block}
+  #menu .card{
+    position:absolute;top:calc(var(--top) + 46px);left:50%;transform:translateX(-50%);
+    width:236px;background:#1c1c1c;border-radius:16px;padding:6px;
+    box-shadow:0 12px 40px rgba(0,0,0,.6);
+  }
+  #menu .card button{
+    display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px 12px;border-radius:11px;font-size:15px;text-align:left;
+  }
+  #menu .card button .tick{width:16px;flex:none;color:var(--fg)}
+  #menu .card button[aria-selected="false"] .tick{visibility:hidden}
+  #menu .card button .dot{width:8px;height:8px;border-radius:999px;flex:none}
+
+  /* ---- right action rail ---- */
+  .rail{
+    position:absolute;right:8px;z-index:12;
+    bottom:calc(var(--nav) + var(--bot) + 96px);
+    display:flex;flex-direction:column;align-items:center;gap:19px;
+  }
+  .rail button{width:38px;height:38px;display:grid;place-items:center}
+  .rail svg{width:27px;height:27px;stroke:#fff;stroke-width:1.7;fill:none}
+  .rail button[data-more] svg{width:24px;stroke-width:2.6}
+  .rail button.act svg{stroke:var(--yolk)}
+
+  /* ---- bottom-left caption block ---- */
+  .cap{
+    position:absolute;left:16px;z-index:12;
+    right:62px;bottom:calc(var(--nav) + var(--bot) + 34px);
+  }
+  .cap .who{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+  .cap .av{width:32px;height:32px;flex:none;border-radius:999px;background:#1c1c1c;display:grid;place-items:center}
+  .cap .av svg{width:18px;height:18px}
+  .cap .nm{font-size:14px;font-weight:600;letter-spacing:-.01em}
+  .cap .tm{font-size:13px;color:#cfcfcf;line-height:1.38}
+  .cap .st{
+    display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;margin-top:9px;
+    border-radius:999px;background:rgba(255,255,255,.1);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.11em;
+  }
+  .cap .st i{width:6px;height:6px;border-radius:999px;flex:none}
+  .cap .samp{border:1px dashed var(--dimmer);background:none;color:var(--dimmer);margin-left:5px}
+  .s-SUPPORTED .st i{background:var(--ok)}      .s-SUPPORTED .st{color:var(--ok)}
+  .s-CONTRADICTED .st i{background:var(--yolk)} .s-CONTRADICTED .st{color:var(--yolk)}
+  .s-UNSUPPORTED .st i{background:var(--dim)}   .s-UNSUPPORTED .st{color:var(--dim)}
+  .s-UNCHECKABLE .st i{background:var(--dimmer)} .s-UNCHECKABLE .st{color:var(--dimmer)}
+
+  /* ---- page dots ---- */
+  .dots{
+    position:absolute;left:0;right:0;z-index:12;
+    bottom:calc(var(--nav) + var(--bot) + 12px);
+    display:flex;justify-content:center;gap:6px;pointer-events:none;
+  }
+  .dots i{width:5px;height:5px;border-radius:999px;background:#4a4a4a;transition:background .18s}
+  .dots i.on{background:#fff}
 
   /* ---- archive grid ---- */
-  #archive{padding:14px 12px calc(var(--nav) + 20px)}
+  #archive{padding:calc(var(--top) + 54px) 12px calc(var(--nav) + var(--bot) + 24px)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-  .cell{aspect-ratio:3/4;background:var(--card);padding:8px;position:relative;text-align:left;overflow:hidden}
-  .cell p{font-size:9.5px;line-height:1.3;color:#c2c2c2;overflow:hidden;max-height:74%}
-  .cell i{position:absolute;left:8px;bottom:7px;width:7px;height:7px}
-  .ghead{font-size:10px;color:var(--dim);margin:0 2px 10px}
+  .cell{aspect-ratio:9/16;background:var(--card);padding:9px;position:relative;text-align:left;overflow:hidden}
+  .cell p{font-size:9.5px;line-height:1.32;color:#c2c2c2;overflow:hidden;max-height:74%}
+  .cell i{position:absolute;left:9px;bottom:8px;width:6px;height:6px;border-radius:999px}
+  .s-SUPPORTED .cell i,.cell.s-SUPPORTED i{background:var(--ok)}
+  .s-CONTRADICTED .cell i,.cell.s-CONTRADICTED i{background:var(--yolk)}
+  .s-UNSUPPORTED .cell i,.cell.s-UNSUPPORTED i{background:var(--dim)}
+  .s-UNCHECKABLE .cell i,.cell.s-UNCHECKABLE i{background:var(--dimmer)}
+  .ghead{font-size:10px;color:var(--dim);margin:0 2px 11px}
 
   /* ---- about ---- */
-  #about{padding:20px 20px calc(var(--nav) + 24px)}
+  #about{padding:calc(var(--top) + 54px) 20px calc(var(--nav) + var(--bot) + 28px)}
   #about h2{font-size:21px;font-weight:600;letter-spacing:-.02em;margin:26px 0 9px}
   #about h2:first-child{margin-top:0}
   #about p{color:#bdbdbd;margin-bottom:11px;max-width:60ch}
@@ -126,70 +178,109 @@
   #about .k .sv{flex:none;width:112px}
   #about .k span{color:#bdbdbd;font-size:13px}
 
-  /* ---- check sheet ---- */
-  #sheet{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:40;align-items:flex-end}
-  #sheet.on{display:flex}
-  .sheet{width:100%;background:#0c0c0c;border-top:1px solid var(--line);padding:20px 18px calc(22px + env(safe-area-inset-bottom));max-height:88%;overflow-y:auto}
-  .sheet h3{font-size:18px;font-weight:600;margin-bottom:5px}
-  .sheet p{color:var(--dim);font-size:13px;margin-bottom:15px}
-  .sheet label{display:block;font-size:10px;color:var(--dim);margin-bottom:6px}
-  .sheet textarea,.sheet input{
-    width:100%;background:#000;border:1px solid var(--line);color:#fff;
-    padding:11px;font:inherit;font-size:15px;margin-bottom:13px;resize:vertical;border-radius:0;
+  /* ---- screen title for non-feed views ---- */
+  #vtitle{
+    position:fixed;left:0;right:0;top:0;z-index:24;display:none;
+    padding:calc(var(--top) + 12px) 16px 10px;
+    font-size:16px;font-weight:600;text-align:center;
+    background:linear-gradient(#000 62%,rgba(0,0,0,0));
   }
-  .sheet textarea:focus,.sheet input:focus{outline:none;border-color:var(--yolk)}
-  .row{display:flex;gap:9px}
-  .btn{height:42px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;border:1px solid var(--line)}
-  .btn.pri{background:var(--yolk);color:#000;border-color:var(--yolk);flex:1}
-  .out{margin-top:14px;padding:12px;background:#000;border:1px solid var(--line);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.6;color:#c9c9c9;white-space:pre-wrap;word-break:break-all}
+  #vtitle.on{display:block}
 
-  /* ---- bottom nav ---- */
+  /* ---- bottom sheets ---- */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:40;align-items:flex-end}
+  .scrim.on{display:flex}
+  .sheet{
+    width:100%;background:#1c1c1c;
+    border-radius:20px 20px 0 0;
+    padding:8px 10px calc(14px + var(--bot));
+    max-height:88%;overflow-y:auto;
+  }
+  .sheet .handle{width:36px;height:4px;border-radius:999px;background:#4a4a4a;margin:0 auto 12px}
+  .sheet .grp{background:#2a2a2a;border-radius:14px;overflow:hidden;margin-bottom:9px}
+  .sheet .grp button{
+    display:flex;align-items:center;gap:13px;width:100%;
+    padding:14px 15px;font-size:15.5px;text-align:left;
+  }
+  .sheet .grp button+button{border-top:1px solid #383838}
+  .sheet .grp button svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;flex:none}
+  .sheet .grp button.danger{color:var(--red)}
+
+  /* ---- file sheet (form) ---- */
+  #sheet .sheet{background:#141414;padding:8px 18px calc(22px + var(--bot))}
+  #sheet h3{font-size:19px;font-weight:600;margin-bottom:5px}
+  #sheet .intro{color:var(--dim);font-size:13px;margin-bottom:16px}
+  #sheet label{display:block;font-size:10px;color:var(--dim);margin-bottom:6px}
+  #sheet textarea,#sheet input,#sheet select{
+    width:100%;background:#000;border:1px solid var(--line);color:#fff;
+    padding:11px;font:inherit;font-size:15px;margin-bottom:13px;resize:vertical;border-radius:9px;
+  }
+  #sheet textarea:focus,#sheet input:focus{outline:none;border-color:var(--yolk)}
+  .row{display:flex;gap:9px}
+  .btn{height:44px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;
+       font-size:14.5px;font-weight:600;border:1px solid var(--line);border-radius:999px}
+  .btn.pri{background:#fff;color:#000;border-color:#fff;flex:1}
+  .field{margin-bottom:12px}
+  .src{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:10px}
+  .src .rm{float:right;color:var(--dim);font-size:11px}
+  .err{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
+  .okmsg{margin-top:13px;padding:12px;border-radius:10px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
+
+  /* ---- toast: Sora's top pill ---- */
+  #toast{
+    position:fixed;z-index:70;left:14px;right:14px;top:calc(var(--top) + 8px);
+    background:#1c1c1c;border-radius:999px;padding:12px 16px;
+    display:none;align-items:center;gap:11px;font-size:14px;
+    box-shadow:0 8px 28px rgba(0,0,0,.5);
+  }
+  #toast.on{display:flex}
+  #toast .x{width:22px;height:22px;flex:none;border-radius:999px;background:#3a3a3a;display:grid;place-items:center}
+  #toast .x svg{width:11px;height:11px;stroke:#bbb;stroke-width:2.6;fill:none}
+
+  /* ---- bottom nav: 5 slots, centre compose ---- */
   nav{
     position:fixed;left:0;right:0;bottom:0;z-index:30;
-    padding:0 20px calc(10px + env(safe-area-inset-bottom));
-    display:flex;justify-content:center;pointer-events:none;
+    height:calc(var(--nav) + var(--bot));padding-bottom:var(--bot);
+    display:flex;align-items:center;justify-content:space-around;
+    background:rgba(0,0,0,.86);backdrop-filter:blur(18px);
+    border-top:1px solid #1a1a1a;
   }
-  .pill{
-    pointer-events:auto;display:flex;align-items:center;gap:4px;
-    background:#141414;border:1px solid var(--line);border-radius:999px;padding:6px;
+  nav button{width:54px;height:46px;display:grid;place-items:center;color:var(--dimmer)}
+  nav button[aria-selected="true"]{color:var(--fg)}
+  nav button svg{width:25px;height:25px;stroke:currentColor;stroke-width:1.75;fill:none}
+  nav .compose{
+    width:46px;height:34px;background:#fff;color:#000;border-radius:999px;
   }
-  .pill button{width:56px;height:46px;display:grid;place-items:center;gap:3px;border-radius:999px;color:var(--dimmer)}
-  .pill button[aria-selected="true"]{color:var(--fg);background:#242424}
-  .pill button svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.7;fill:none}
-  .pill button small{font-size:8.5px;letter-spacing:.04em}
-  .pill .check{width:50px;height:50px;background:#fff;color:#000;border-radius:999px;margin:0 3px}
-  .pill .check svg{width:23px;height:23px;stroke:#000;stroke-width:2.1}
+  nav .compose svg{width:21px;height:21px;stroke:#000;stroke-width:2.4}
+  nav .me{width:27px;height:27px;border-radius:999px;background:#2a2a2a;display:grid;place-items:center}
+  nav .me svg{width:15px;height:15px}
+  nav button[aria-selected="true"] .me{box-shadow:0 0 0 2px #fff}
 
-  .field{margin-bottom:12px}
-  .sheet select{width:100%;background:#000;border:1px solid var(--line);color:#fff;padding:11px;font:inherit;font-size:15px;border-radius:0}
-  .src{border:1px solid var(--line);padding:11px;margin-bottom:10px}
-  .src .rm{float:right;color:var(--dim);font-size:11px}
-  .err{margin-top:13px;padding:12px;border:1px solid #4a3a0e;background:#161200;color:var(--yolk);font-size:13px;line-height:1.5}
-  .okmsg{margin-top:13px;padding:12px;border:1px solid #1c4a2c;background:#04150a;color:var(--ok);font-size:13px}
-  .rep{margin-left:auto;font-size:11px;color:var(--dimmer);text-decoration:underline}
-  #install{display:none;position:fixed;left:16px;right:16px;bottom:calc(var(--nav) + 18px);z-index:35;
-    background:#fff;color:#000;padding:12px 14px;align-items:center;gap:12px;font-size:13px}
+  #install{
+    display:none;position:fixed;left:14px;right:14px;z-index:35;
+    bottom:calc(var(--nav) + var(--bot) + 14px);
+    background:#fff;color:#000;padding:13px 15px;border-radius:14px;
+    align-items:center;gap:12px;font-size:13px;
+  }
   #install.on{display:flex}
   #install .btn{height:32px;background:#000;color:#fff;border-color:#000;font-size:12px}
 </style>
 </head>
-<body>
+<body class="has-banner">
 
 <div id="sample">Sample records · fictional people and companies</div>
 
-<header>
-  <div class="brand">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z" fill="none" stroke="#fff" stroke-width="7"/>
-      <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="7" stroke-linejoin="miter"/>
-    </svg>
-    <b>Cracked</b>
-  </div>
-  <div class="tabs" role="tablist">
-    <button role="tab" data-filter="all" aria-selected="true">Latest</button>
-    <button role="tab" data-filter="open" aria-selected="false">Unchecked</button>
-  </div>
-</header>
+<div id="toast"><span class="x"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span id="toastMsg"></span></div>
+
+<div id="top">
+  <button id="sel">
+    <span id="selName">Latest</span>
+    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+  <button class="ico" id="openAbout" aria-label="The rules">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.3"/></svg>
+  </button>
+</div>
 
 <main>
   <section class="view on" id="feed"></section>
@@ -208,36 +299,39 @@
     <p>No likes, no scores, no ranking, no trending. A record either has a source or it does not, and a crowd cannot vote a document into existence. Ranking claims by popularity would also make this a publisher rather than a record.</p>
     <h2>What is not here</h2>
     <p>No claims about private individuals. No words about intent. You cannot source what someone meant, so it never gets published.</p>
+    <h2>Reporting a record</h2>
+    <p>Every record carries a report control under the ••• menu. A report names what is wrong with the record, and it is read by a person. Records found to be unsourced or misattributed are removed.</p>
+    <p>Contact: cracked@codexfoundry.com</p>
   </section>
 </main>
 
-<div id="install">
-  <span id="installMsg" style="flex:1">Add Cracked to your home screen.</span>
-  <button class="btn" id="installGo">Install</button>
-  <button class="btn" id="installNo" style="background:none;color:#000;border-color:#ccc">Later</button>
+<div id="vtitle"></div>
+
+<div id="menu">
+  <div class="card" id="menuCard"></div>
 </div>
 
-<nav>
-  <div class="pill" role="tablist">
-    <button data-view="feed" aria-selected="true">
-      <svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg><small>Feed</small>
-    </button>
-    <button data-view="archive" aria-selected="false">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><small>Archive</small>
-    </button>
-    <button class="check" id="openSheet" aria-label="Check a claim">
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-    <button data-view="about" aria-selected="false">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.3"/></svg><small>Rules</small>
-    </button>
-  </div>
-</nav>
-
-<div id="sheet">
+<div class="scrim" id="more">
   <div class="sheet">
+    <div class="handle"></div>
+    <div class="grp">
+      <button data-act="copylink"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg>Copy link</button>
+      <button data-act="copytext"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg>Copy the record</button>
+    </div>
+    <div class="grp">
+      <button data-act="report" class="danger"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 15.6v.3"/></svg>Report this record</button>
+    </div>
+    <div class="grp">
+      <button data-act="cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="sheet">
+  <div class="sheet">
+    <div class="handle"></div>
     <h3>File a record</h3>
-    <p>Cracked does not take rumors. A record is a public claim plus documents anyone can open.</p>
+    <p class="intro">Cracked does not take rumors. A record is a public claim plus documents anyone can open.</p>
 
     <div class="field"><label class="mono">The claim, verbatim</label>
       <textarea id="fClaim" rows="2" placeholder="&quot;We crossed $4M ARR last month.&quot;"></textarea></div>
@@ -268,6 +362,31 @@
     <div class="err" id="fErr" hidden></div>
     <div class="okmsg" id="fOk" hidden></div>
   </div>
+</div>
+
+<div id="install">
+  <span id="installMsg" style="flex:1">Add Cracked to your home screen.</span>
+  <button class="btn" id="installGo">Install</button>
+  <button class="btn" id="installNo" style="background:none;color:#000;border-color:#ccc">Later</button>
+</div>
+
+<nav>
+  <button data-view="feed" aria-selected="true" aria-label="Feed">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+  </button>
+  <button data-view="archive" aria-selected="false" aria-label="Archive">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+  </button>
+  <button class="compose" id="openSheet" aria-label="File a record">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button data-view="reports" aria-selected="false" aria-label="Notices">
+    <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-2 8-2 8h16s-2-1-2-8"/><path d="M13.7 20a2 2 0 01-3.4 0"/></svg>
+  </button>
+  <button data-view="about" aria-selected="false" aria-label="Rules">
+    <span class="me"><svg viewBox="0 0 24 24" style="stroke:#8a8a8a"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0114.4 0"/></svg></span>
+  </button>
+</nav>
 
 <script>
 // Records come from the API when one is configured and reachable. When it is not,
@@ -308,19 +427,31 @@ const SAMPLES = [
 ];
 
 const $ = s => document.querySelector(s);
-const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let filter = 'all';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const FEEDS = [
+  { id:'all',           name:'Latest',       label:'Latest' },
+  { id:'open',          name:'Unchecked',    label:'Unchecked' },
+  { id:'CONTRADICTED',  name:'Contradicted', label:'Contradicted', dot:'var(--yolk)' },
+  { id:'SUPPORTED',     name:'Supported',    label:'Supported',    dot:'var(--ok)' },
+];
+let feedId = 'all';
 
 let records = SAMPLES;
 let live = false;   // true only once real records have actually loaded
+let openRec = null; // the record the ••• sheet was opened on
 
-function visible(){ return filter === 'all' ? records : records.filter(r => r.status !== 'SUPPORTED'); }
+function visible(){
+  if (feedId === 'all')  return records;
+  if (feedId === 'open') return records.filter(r => r.status !== 'SUPPORTED');
+  return records.filter(r => r.status === feedId);
+}
 
 // The status chip says SAMPLE per card; the banner says it once at the top. Both are
 // driven off `live` so they cannot disagree with what is on screen.
 function markSampleState(){
   $('#sample').hidden = live;
-  document.body.classList.toggle('is-live', live);
+  document.body.classList.toggle('has-banner', !live);
 }
 
 async function loadRecords(){
@@ -348,91 +479,149 @@ async function loadRecords(){
   }
 }
 
+const MARK = `<svg viewBox="0 0 100 100" aria-hidden="true">
+  <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z" fill="none" stroke="#fff" stroke-width="8"/>
+  <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="8"/>
+</svg>`;
+
 function renderFeed(){
   const rs = visible();
+  if (!rs.length){
+    $('#feed').innerHTML = `<article class="rec"><div class="page"><div class="lbl mono">Nothing here</div>
+      <div class="claimtext" style="font-size:24px">No records carry this status yet.</div></div></article>`;
+    return;
+  }
   $('#feed').innerHTML = rs.map((r, i) => `
     <article class="rec s-${r.status}" data-i="${i}">
-      <div class="poster">
-        <span class="av"><svg viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M50 8C72 8 88 38 88 60 88 82 71 94 50 94 29 94 12 82 12 60 12 38 28 8 50 8Z" fill="none" stroke="#fff" stroke-width="8"/>
-          <path d="M13 58 25 50 34 60 46 49 56 61 68 50 78 60 87 53" fill="none" stroke="#F2A900" stroke-width="8"/>
-        </svg></span>
-        <span><span class="nm">${esc(r.who)}</span><br><span class="tm">${esc(r.made)}</span></span>
-      </div>
-      <div class="stage">
-        <div class="face" data-face="claim">
+      <div class="pages">
+        <div class="page claim">
           <div class="lbl mono">The claim</div>
           <div class="claimtext">${esc(r.claim)}</div>
         </div>
-        <div class="face" data-face="doc" hidden>
+        <div class="page">
           <div class="lbl mono">The source</div>
           <div class="doc">${esc(r.doc)}</div>
-        </div>
-        <button class="pip" data-swap aria-label="Swap claim and source">
-          <div class="lbl mono" data-piplbl>The source</div>
-          <p data-piptext>${esc(r.doc.slice(0, 96))}</p>
-        </button>
-        <div class="rail">
-          <button data-copy aria-label="Copy record"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg></button>
-          <button data-share aria-label="Share record"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4M5 15v4h14v-4"/></svg></button>
+          <div class="lbl mono" style="margin:22px 0 8px">Would change it</div>
+          <div style="font-size:13.5px;color:#cfcfcf;line-height:1.5">${esc(r.flip)}</div>
         </div>
       </div>
-      <div class="chips">
-        <span class="chip st"><i class="dot"></i>${r.status}</span>
-        ${live ? '' : '<span class="chip samp">SAMPLE</span>'}
+
+      <div class="rail">
+        <button data-page="1" aria-label="The source"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></button>
+        <button data-act="copytext" aria-label="Copy the record"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg></button>
+        <button data-act="share" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-7 18-3.5-7.5L3 10z"/></svg></button>
+        <button data-more aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9" fill="#fff"/><circle cx="12" cy="12" r=".9" fill="#fff"/><circle cx="19" cy="12" r=".9" fill="#fff"/></svg></button>
       </div>
-      <div class="flip"><b>Would change it:</b> ${esc(r.flip)}
-        ${r.id ? `<button class="rep" data-report="${r.id}">Report this record</button>` : ''}
+
+      <div class="cap">
+        <div class="who">
+          <span class="av">${MARK}</span>
+          <span class="nm">${esc(r.who)}</span>
+        </div>
+        <div class="tm">${esc(r.made)}</div>
+        <div>
+          <span class="st"><i></i>${esc(r.status)}</span>
+          ${live ? '' : '<span class="st samp">SAMPLE</span>'}
+        </div>
       </div>
+
+      <div class="dots"><i class="on"></i><i></i></div>
     </article>`).join('');
+
+  // Dots follow the horizontal pager.
+  $('#feed').querySelectorAll('.rec').forEach(rec => {
+    const pager = rec.querySelector('.pages');
+    const dots  = rec.querySelectorAll('.dots i');
+    if (!pager) return;
+    pager.addEventListener('scroll', () => {
+      const p = Math.round(pager.scrollLeft / pager.clientWidth);
+      dots.forEach((d, n) => d.classList.toggle('on', n === p));
+    }, { passive: true });
+  });
 }
 
 function renderArchive(){
   const rs = visible();
-  $('#archive').innerHTML = `<div class="ghead mono">${rs.length} records · sample</div><div class="grid">` +
-    rs.map((r, i) => `<button class="cell s-${r.status}" data-jump="${i}"><p>${esc(r.claim)}</p><i class="dot"></i></button>`).join('') +
+  $('#archive').innerHTML =
+    `<div class="ghead mono">${rs.length} records · ${live ? 'archive' : 'sample'}</div><div class="grid">` +
+    rs.map((r, i) => `<button class="cell s-${r.status}" data-jump="${i}"><p>${esc(r.claim)}</p><i></i></button>`).join('') +
     `</div>`;
 }
 
 function show(v){
+  if (v === 'reports'){ toast('Notices arrive when a record you filed gets a source.'); return; }
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === v));
-  document.querySelectorAll('.pill button[data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === v));
-  header.style.display = (v === 'feed') ? '' : 'none';
+  document.querySelectorAll('nav button[data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === v));
+  $('#top').style.display = (v === 'feed') ? '' : 'none';
+  const t = $('#vtitle');
+  t.classList.toggle('on', v !== 'feed');
+  t.textContent = v === 'archive' ? 'Archive' : v === 'about' ? 'The rules' : '';
 }
-const header = document.querySelector('header');
 
-document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-  filter = b.dataset.filter;
-  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-  renderFeed(); renderArchive(); $('#feed').scrollTop = 0;
-}));
+/* ---- feed selector menu ---- */
+function renderMenu(){
+  $('#menuCard').innerHTML = FEEDS.map(f => `
+    <button data-feed="${f.id}" aria-selected="${f.id === feedId}">
+      <span class="tick">✓</span>
+      ${f.dot ? `<span class="dot" style="background:${f.dot}"></span>` : ''}
+      <span>${f.label}</span>
+    </button>`).join('');
+}
+$('#sel').addEventListener('click', () => { renderMenu(); $('#menu').classList.add('on'); });
+$('#menu').addEventListener('click', e => {
+  const b = e.target.closest('[data-feed]');
+  if (b){
+    feedId = b.dataset.feed;
+    $('#selName').textContent = FEEDS.find(f => f.id === feedId).name;
+    $('#sel').classList.toggle('pill', feedId !== 'all');
+    renderFeed(); renderArchive(); $('#feed').scrollTop = 0;
+  }
+  $('#menu').classList.remove('on');
+});
 
-document.querySelectorAll('.pill button[data-view]').forEach(b =>
+document.querySelectorAll('nav button[data-view]').forEach(b =>
   b.addEventListener('click', () => show(b.dataset.view)));
+$('#openAbout').addEventListener('click', () => show('about'));
+
+/* ---- record actions ---- */
+function recordText(r){
+  return `CLAIM: "${r.claim}"\nCLAIMANT: ${r.who}\nMADE: ${r.made}\nSTATUS: ${r.status}\nWOULD CHANGE IT: ${r.flip}`
+    + (live ? '' : '\n\n[SAMPLE RECORD — fictional]');
+}
+
+function act(name, r){
+  if (name === 'copytext'){ navigator.clipboard?.writeText(recordText(r)); toast('Copied the record'); return; }
+  if (name === 'copylink'){ navigator.clipboard?.writeText(location.href); toast('Copied post link'); return; }
+  if (name === 'share'){
+    const data = { title:'Cracked', text:`"${r.claim}" — ${r.status}${live ? '' : ' [sample]'}`, url: location.href };
+    if (navigator.share) navigator.share(data).then(() => toast('Sent post link')).catch(() => {});
+    else { navigator.clipboard?.writeText(location.href); toast('Copied post link'); }
+    return;
+  }
+  if (name === 'report') report(r);
+}
 
 $('#feed').addEventListener('click', e => {
-  const rec = e.target.closest('.rec'); if (!rec) return;
-  const r = visible()[+rec.dataset.i];
+  const rec = e.target.closest('.rec'); if (!rec || !rec.dataset.i) return;
+  const r = visible()[+rec.dataset.i]; if (!r) return;
 
-  if (e.target.closest('[data-swap]')) {
-    const faces = rec.querySelectorAll('.face');
-    const showingClaim = !faces[0].hidden;
-    faces[0].hidden = showingClaim; faces[1].hidden = !showingClaim;
-    rec.querySelector('[data-piplbl]').textContent = showingClaim ? 'The claim' : 'The source';
-    rec.querySelector('[data-piptext]').textContent = showingClaim ? r.claim : r.doc.slice(0, 108);
+  const pg = e.target.closest('[data-page]');
+  if (pg){
+    const pager = rec.querySelector('.pages');
+    const to = pager.scrollLeft > pager.clientWidth / 2 ? 0 : pager.clientWidth;
+    pager.scrollTo({ left: to, behavior: 'smooth' });
     return;
   }
-  if (e.target.closest('[data-copy]')) {
-    const txt = `CLAIM: "${r.claim}"\nCLAIMANT: ${r.who}\nMADE: ${r.made}\nSTATUS: ${r.status}\nWOULD CHANGE IT: ${r.flip}\n\n[SAMPLE RECORD — fictional]`;
-    navigator.clipboard?.writeText(txt);
-    flash(e.target.closest('button'), 'Copied');
-    return;
-  }
-  if (e.target.closest('[data-share]')) {
-    const data = { title: 'Cracked', text: `"${r.claim}" — ${r.status} [sample]`, url: location.href };
-    if (navigator.share) navigator.share(data).catch(() => {});
-    else { navigator.clipboard?.writeText(location.href); flash(e.target.closest('button'), 'Link copied'); }
-  }
+  if (e.target.closest('[data-more]')){ openRec = r; $('#more').classList.add('on'); return; }
+  const a = e.target.closest('[data-act]');
+  if (a) act(a.dataset.act, r);
+});
+
+$('#more').addEventListener('click', e => {
+  if (e.target.id === 'more'){ $('#more').classList.remove('on'); return; }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  $('#more').classList.remove('on');
+  if (b.dataset.act !== 'cancel' && openRec) act(b.dataset.act, openRec);
 });
 
 $('#archive').addEventListener('click', e => {
@@ -444,16 +633,16 @@ $('#archive').addEventListener('click', e => {
   });
 });
 
-function flash(btn, msg){
-  if (!btn) return;
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav) + 34px);background:#fff;color:#000;font-size:12px;padding:7px 13px;z-index:50';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 1200);
+let toastT = null;
+function toast(msg){
+  $('#toastMsg').textContent = msg;
+  $('#toast').classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => $('#toast').classList.remove('on'), 2600);
 }
+$('#toast').addEventListener('click', () => $('#toast').classList.remove('on'));
 
-// check sheet
+/* ---- file sheet ---- */
 $('#openSheet').addEventListener('click', () => $('#sheet').classList.add('on'));
 $('#fClose').addEventListener('click', () => $('#sheet').classList.remove('on'));
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') $('#sheet').classList.remove('on'); });
@@ -519,25 +708,22 @@ $('#fSubmit').addEventListener('click', async () => {
   }
 });
 
-// report
-document.addEventListener('click', async e => {
-  const btn = e.target.closest('[data-report]');
-  if (!btn) return;
+/* ---- report: Guideline 1.2 requires this reachable from every item ---- */
+async function report(r){
   const reason = prompt('What is wrong with this record?');
   if (!reason || !reason.trim()) return;
-  if (!API) { flash(btn, 'No archive connected'); return; }
+  if (!API || !r.id) { toast('No archive connected, so nothing was sent.'); return; }
   try {
-    const res = await fetch(`${API.replace(/\/$/, '')}/records/${btn.dataset.report}/report`, {
+    const res = await fetch(`${API.replace(/\/$/, '')}/records/${r.id}/report`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: reason.trim() }),
     });
-    flash(btn, res.ok ? 'Reported' : 'Could not report');
-  } catch { flash(btn, 'Could not report'); }
-});
+    toast(res.ok ? 'Reported. A person reads every report.' : 'Could not send the report.');
+  } catch { toast('Could not send the report.'); }
+}
 
-// install
-// iOS Safari never fires beforeinstallprompt, so the Android path alone leaves
-// iPhone users with no way to discover the install. Detect and instruct instead.
+/* ---- install (web only; the native build never shows this) ---- */
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
          || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -547,10 +733,10 @@ function dismiss(){ try { localStorage.setItem('cracked.install', 'no'); } catch
 let deferred = null;
 addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); deferred = e;
-  if (!standalone && !dismissed()) $('#install').classList.add('on');
+  if (!standalone && !native && !dismissed()) $('#install').classList.add('on');
 });
 
-if (iOS && !standalone && !dismissed()) {
+if (iOS && !standalone && !native && !dismissed()) {
   $('#installMsg').innerHTML = 'Install Cracked: tap Share, then <b>Add to Home Screen</b>.';
   $('#installGo').hidden = true;
   $('#installNo').textContent = 'Got it';
@@ -567,7 +753,9 @@ addEventListener('appinstalled', () => { $('#install').classList.remove('on'); d
 markSampleState(); renderFeed(); renderArchive();
 loadRecords().then(() => { markSampleState(); renderFeed(); renderArchive(); });
 
-if ('serviceWorker' in navigator) {
+// The service worker is a web-only concern. Inside the native shell the files are
+// already local, and a worker there only adds a second, staler cache.
+if ('serviceWorker' in navigator && !native) {
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   // A new worker taking control means the shell changed under us. Reload once so the
   // running page is never older than the worker serving it.

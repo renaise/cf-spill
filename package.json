@@ -1,0 +1,15 @@
+{
+  "name": "cracked",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cracked — founder claims, and the receipts that check them.",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "appId": "com.codexfoundry.cracked",
+  "appName": "Cracked",
+  "webDir": "app",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#000000",
+    "scrollEnabled": false
+  },
+  "server": {
+    "iosScheme": "capacitor"
+  }
+}
