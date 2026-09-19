@@ -4,358 +4,409 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Spill</title>
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b0e0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Spill">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" href="./icon-192.png">
 <style>
   :root{
-    /* Ground is paper, not screen. An investor reads this in daylight, on a
-       phone, before a meeting -- that scene forces light. */
-    --paper:#ffffff;
-    --raise:#fafafa;
-    --ink:#0d0d0d;
-    --ink-2:#5d5d5d;
-    --ink-3:#8f8f8f;
-    --rule:#e6e6e6;
-    --rule-2:#f1f1f1;
+    /* Reddit's night register: not pure black, so cards can sit above ground. */
+    --ground:#0b0e0f;
+    --card:#141a1c;
+    --card-2:#1a2225;
+    --line:#242e31;
+    --line-2:#2f3a3e;
+    --fg:#e8eced;
+    --fg-2:#9aa6aa;
+    --fg-3:#6b787c;
 
-    /* Colour is reserved. Four states, one hue each, and nothing else on the
-       surface is allowed a hue at all. */
-    --ok:#0f7a43;        /* SUPPORTED   -- a document corroborates */
-    --against:#a84a06;   /* CONTRADICTED-- a document says otherwise */
-    --none:#0d0d0d;      /* UNSUPPORTED -- drawn in full ink, never dimmed */
-    --moot:#8f8f8f;      /* UNCHECKABLE -- no document could settle it */
+    /* Four reserved hues, one per status, nothing else on the surface gets one. */
+    --ok:#4ec77f;
+    --against:#f08a3c;
+    --none:#e8eced;
+    --moot:#6b787c;
 
-    --nav:60px;
+    --nav:56px;
     --sat:env(safe-area-inset-top);
     --top:env(safe-area-inset-top);
     --bot:env(safe-area-inset-bottom);
     --strip:0px;
+    --col:680px;   /* the reading column, Reddit's width */
+    --rail:232px;  /* desktop left rail */
+    --gut:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   [hidden]{display:none!important}
-  html,body{height:100%;overscroll-behavior:none}
+  html,body{height:100%}
   body{
-    background:var(--paper);color:var(--ink);
+    background:var(--ground);color:var(--fg);
     font-family:"Helvetica Neue",Helvetica,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
-    letter-spacing:-.006em;overflow:hidden;
+    font-size:15px;line-height:1.45;letter-spacing:-.005em;
+    -webkit-font-smoothing:antialiased;overflow:hidden;
   }
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-  .mono{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    letter-spacing:.1em;text-transform:uppercase;
-  }
+  a{color:inherit}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}
 
   /* ---- sample banner: required, never removable while samples are showing ---- */
   #sample{
     position:fixed;top:0;left:0;right:0;z-index:60;
-    background:var(--ink);color:var(--paper);
+    background:#3a2a12;color:#f5c88a;border-bottom:1px solid #54401f;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
     text-align:center;padding:6px 12px;padding-top:calc(6px + var(--sat));
   }
   body.has-banner{--top:calc(var(--sat) + 25px)}
 
-  /* ---- views ---- */
   main{position:fixed;inset:0}
   .view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
   .view.on{display:block}
+  .col{width:100%;max-width:var(--col);margin:0 auto;padding:0 var(--gut)}
 
   /* ---- header ---- */
   #top{
     position:fixed;left:0;right:0;top:0;z-index:25;
-    padding:calc(var(--top) + 8px) 18px 0;
-    display:flex;align-items:center;height:calc(var(--top) + 46px);
-    background:var(--paper);
+    height:calc(var(--top) + 48px);padding-top:var(--top);
+    display:flex;align-items:center;gap:12px;padding-left:var(--gut);padding-right:var(--gut);
+    background:var(--ground);border-bottom:1px solid var(--line);
   }
-  #selName{font-size:15px;font-weight:600;letter-spacing:.015em}
-  #top .ico{margin-left:auto;width:32px;height:32px;display:grid;place-items:center;color:var(--ink-2)}
-  #top .ico svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.5;fill:none}
-  body.detail #selName{margin:0 auto;font-size:11px;letter-spacing:.14em;
-    text-transform:uppercase;font-weight:500;color:var(--ink-3)}
+  #selName{font-size:16px;font-weight:600;letter-spacing:-.012em}
+  #top .ico{margin-left:auto;width:32px;height:32px;display:grid;place-items:center;
+            border-radius:999px;color:var(--fg-2)}
+  #top .ico:hover{background:var(--card)}
+  #top .ico svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.6;fill:none}
+  body.detail #selName{margin:0 auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:500;color:var(--fg-3)}
   body.detail #top .ico{display:none}
 
   /* ---- filter row ---- */
   #chips{
-    position:fixed;left:0;right:0;z-index:24;
-    top:calc(var(--top) + 46px);
-    display:flex;gap:6px;padding:0 18px 12px;
+    position:fixed;left:0;right:0;z-index:24;top:calc(var(--top) + 48px);
+    background:var(--ground);border-bottom:1px solid var(--line);
+  }
+  #chipRow{
+    display:flex;gap:7px;padding:10px var(--gut);
     overflow-x:auto;scrollbar-width:none;
-    background:var(--paper);border-bottom:1px solid var(--rule);
   }
-  #chips::-webkit-scrollbar{display:none}
+  #chipRow::-webkit-scrollbar{display:none}
   #chips button{
-    flex:none;display:inline-flex;align-items:center;gap:7px;
-    height:29px;padding:0 12px;border-radius:999px;
-    border:1px solid var(--rule);color:var(--ink-2);
-    font-size:13px;font-weight:450;white-space:nowrap;
+    flex:none;height:30px;padding:0 13px;border-radius:999px;
+    background:var(--card);color:var(--fg-2);
+    font-size:13px;font-weight:500;white-space:nowrap;
   }
-  #chips button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  #chips button:hover{background:var(--card-2)}
+  #chips button[aria-selected="true"]{background:var(--fg);color:var(--ground)}
 
-  /* ---- the mark that carries state ----
-     A filled square means a document is on file. A hollow ring means none was
-     found. Absence is drawn as deliberately as presence, because UNSUPPORTED is
-     the honest default and most records will carry it -- dimming it would tell
-     the reader it mattered less than the others. */
+  /* ---- the state mark ----
+     Filled square: a document is on file. Hollow ring: none was found.
+     Absence is drawn as deliberately as presence -- UNSUPPORTED is the honest
+     default and most records carry it, so it never renders as a dimmed state. */
   .mk{width:8px;height:8px;flex:none;display:inline-block}
   .mk.fill{background:currentColor}
-  .mk.ring{border:1.5px solid currentColor;border-radius:999px;background:none}
+  .mk.ring{border:1.5px solid currentColor;border-radius:999px}
 
-  /* Colour is carried by a field, not scattered as an accent. */
   .tag{
-    display:inline-flex;align-items:center;gap:7px;height:23px;padding:0 9px;
+    display:inline-flex;align-items:center;gap:7px;height:22px;padding:0 9px;border-radius:4px;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
-    background:var(--raise);color:var(--ink-2);border:1px solid var(--rule);
+    background:var(--card-2);color:var(--fg-2);
   }
-  .tag.samp{background:none;border:1px dashed var(--ink-3);color:var(--ink-3)}
-  .s-SUPPORTED    .tag.st{color:var(--ok);      background:#f1f8f3;border-color:#cfe6d8}
-  .s-CONTRADICTED .tag.st{color:var(--against); background:#fdf4ed;border-color:#f0dcc9}
-  .s-UNSUPPORTED  .tag.st{color:var(--none);    background:var(--raise);border-color:var(--rule)}
-  .s-UNCHECKABLE  .tag.st{color:var(--moot);    background:var(--raise);border-color:var(--rule)}
+  .tag.samp{background:none;border:1px dashed var(--fg-3);color:var(--fg-3)}
+  .s-SUPPORTED    .tag.st{color:var(--ok);      background:rgba(78,199,127,.12)}
+  .s-CONTRADICTED .tag.st{color:var(--against); background:rgba(240,138,60,.12)}
+  .s-UNSUPPORTED  .tag.st{color:var(--none);    background:var(--card-2)}
+  .s-UNCHECKABLE  .tag.st{color:var(--moot);    background:var(--card-2)}
+  .s-SUPPORTED .mk{color:var(--ok)}   .s-CONTRADICTED .mk{color:var(--against)}
+  .s-UNSUPPORTED .mk{color:var(--none)} .s-UNCHECKABLE .mk{color:var(--moot)}
 
-  /* ---- the list ---- */
-  #feed{padding:calc(var(--top) + 100px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 16px)}
-  .post{
-    display:block;width:100%;text-align:left;
-    padding:20px 18px 17px;border-bottom:1px solid var(--rule);
+  /* ---- the feed is people, and each person's claims sit under them ---- */
+  #feed{padding:calc(var(--top) + 110px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
+  .pcard{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-bottom:12px;overflow:hidden;
   }
-  .post:active{background:var(--raise)}
-  .phead{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
-  .phead .nm{
-    font-size:12.5px;font-weight:500;color:var(--ink-2);min-width:0;
+  .pcard:hover{border-color:var(--line-2)}
+  .phead{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:15px 16px 14px;
+  }
+  .av{
+    width:38px;height:38px;flex:none;border-radius:999px;
+    background:var(--card-2);border:1px solid var(--line-2);
+    display:grid;place-items:center;
+    font-size:14px;font-weight:600;letter-spacing:.01em;color:var(--fg-2);
+  }
+  .pwho{min-width:0;flex:1}
+  .pwho .nm{font-size:15px;font-weight:600;letter-spacing:-.012em;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pwho .sub{
+    font-size:12.5px;color:var(--fg-3);margin-top:2px;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .phead .hd{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11px;color:var(--ink-3);flex:none;
+  .pwho .sub .hd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+  /* A count of records is a fact about the record set. It is never broken down
+     by status here, because a tally of verdicts on a card about a person is a
+     score on the person, and status describes the claim, never the person. */
+  .pcount{
+    flex:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);
   }
-  .phead .tm{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11px;color:var(--ink-3);flex:none;margin-left:auto;padding-left:10px;
-  }
-  .ptitle{
+  .plist{border-top:1px solid var(--line)}
+  .prow{
     display:block;width:100%;text-align:left;
-    font-size:20px;line-height:1.24;font-weight:500;letter-spacing:-.021em;
-    margin-bottom:12px;
+    padding:13px 16px;border-top:1px solid var(--line);
   }
-  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .pbody{
+  .plist .prow:first-child{border-top:0}
+  .prow:hover{background:var(--card-2)}
+  .prow .cl{font-size:15px;line-height:1.35;letter-spacing:-.012em;margin-bottom:9px}
+  .prow .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .prow .where{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11.5px;line-height:1.55;color:var(--ink-2);
-    background:var(--raise);border:1px solid var(--rule-2);padding:11px 12px;
-    white-space:pre-wrap;
-    /* border-box, so the block's own 22px of padding is inside this number */
-    max-height:calc(1.55em * 3 + 22px);overflow:hidden;
+    font-size:10.5px;color:var(--fg-3);
   }
-  /* No vote column. Spill does not rank records, so the only number here counts
-     documents, which is a fact about the record and not a verdict on it. */
-  .pacts{display:flex;align-items:center;gap:16px;margin-top:13px}
-  .pacts button{
-    display:inline-flex;align-items:center;gap:7px;height:26px;
-    font-size:12.5px;color:var(--ink-2);
+
+  /* ---- profile ---- */
+  #profile{padding:calc(var(--top) + 60px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 32px)}
+  .phero{display:flex;align-items:center;gap:14px;padding:6px 0 20px}
+  .phero .av{width:54px;height:54px;font-size:19px}
+  .phero h2{font-size:22px;font-weight:600;letter-spacing:-.02em}
+  .phero .sub{font-size:13.5px;color:var(--fg-2);margin-top:4px}
+  .phero .sub .hd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  .pnote{
+    font-size:13px;color:var(--fg-3);line-height:1.55;
+    padding:13px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px;
+    margin-bottom:16px;
   }
-  .pacts svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none}
-  .pacts .grow{margin-left:auto}
 
   /* ---- one record ---- */
-  #detail{padding:calc(var(--top) + 60px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 32px)}
-  #detail .lbl{
+  #detail{padding:calc(var(--top) + 60px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 32px)}
+  .lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+       font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+       color:var(--fg-3);margin-bottom:11px}
+  #detail .claimtext{font-size:clamp(24px,6vw,31px);line-height:1.18;font-weight:600;letter-spacing:-.026em}
+  #detail .meta{margin-top:15px;font-size:13.5px;color:var(--fg-2);line-height:1.55}
+  .doc{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--ink-3);margin-bottom:12px;
+    font-size:11.5px;line-height:1.62;color:var(--fg);white-space:pre-wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px 14px;
+    overflow-x:auto;
   }
-  #detail .claimtext{
-    font-size:clamp(25px,7vw,33px);line-height:1.16;font-weight:500;letter-spacing:-.028em;
-  }
-  #detail .meta{margin-top:16px;font-size:13px;color:var(--ink-2);line-height:1.5}
-  #detail .doc{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11.5px;line-height:1.62;color:var(--ink);white-space:pre-wrap;
-    background:var(--raise);border:1px solid var(--rule);padding:15px 14px;
-  }
-  #detail .sec{margin-top:30px;padding-top:22px;border-top:1px solid var(--rule)}
-  #detail .where{
-    display:flex;align-items:center;gap:10px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:11.5px;line-height:1.5;color:var(--ink);text-decoration:none;
-    border:1px solid var(--rule);background:var(--raise);padding:13px 14px;
+  .sec{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+  .flip{font-size:14px;color:var(--fg-2);line-height:1.55}
+  .where-l{
+    display:flex;align-items:center;gap:10px;text-decoration:none;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;
     word-break:break-all;
   }
-  #detail .where svg{width:14px;height:14px;flex:none;stroke:var(--ink-3);stroke-width:1.7;fill:none}
-  #detail .wnote{margin-top:9px;font-size:12.5px;color:var(--ink-3);line-height:1.5}
-  #detail .flip{font-size:14px;color:var(--ink-2);line-height:1.55}
+  .where-l:hover{border-color:var(--line-2)}
+  .where-l svg{width:14px;height:14px;flex:none;stroke:var(--fg-3);stroke-width:1.7;fill:none}
+  .wnote{margin-top:9px;font-size:12.5px;color:var(--fg-3);line-height:1.5}
   #back{
-    position:fixed;z-index:26;left:12px;top:calc(var(--top) + 8px);
-    width:32px;height:32px;display:none;place-items:center;
+    position:fixed;z-index:26;left:8px;top:calc(var(--top) + 8px);
+    width:32px;height:32px;display:none;place-items:center;border-radius:999px;
   }
   #back.on{display:grid}
-  #back svg{width:20px;height:20px;stroke:var(--ink);stroke-width:1.6;fill:none}
+  #back:hover{background:var(--card)}
+  #back svg{width:20px;height:20px;stroke:var(--fg);stroke-width:1.7;fill:none}
 
   /* ---- empty ---- */
-  .empty{padding:56px 18px;text-align:left}
-  .empty .lbl{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--ink-3);margin-bottom:14px;
-  }
-  .empty h3{font-size:24px;font-weight:500;letter-spacing:-.024em;line-height:1.2}
-  .empty p{margin-top:13px;font-size:14px;color:var(--ink-2);line-height:1.55;max-width:32ch}
+  .empty{padding:56px 0;text-align:left}
+  .empty h3{font-size:23px;font-weight:600;letter-spacing:-.022em;line-height:1.22}
+  .empty p{margin-top:13px;font-size:14px;color:var(--fg-2);line-height:1.55;max-width:34ch}
 
   /* ---- archive ---- */
-  #archive{padding:calc(var(--top) + 58px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
-  .ghead{
-    padding:0 18px 14px;color:var(--ink-3);
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-  }
+  #archive{padding:calc(var(--top) + 60px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 24px)}
+  .ghead{padding:0 0 14px;color:var(--fg-3);
+         font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+         font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
   .arow{
     display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
-    padding:15px 18px;border-top:1px solid var(--rule);
+    padding:14px 14px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;margin-bottom:8px;
   }
+  .arow:hover{border-color:var(--line-2)}
   .arow .mk{margin-top:5px}
-  .arow .t{font-size:14.5px;line-height:1.35;letter-spacing:-.012em;
-           overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .arow .w{font-size:12px;color:var(--ink-3);margin-top:4px}
-  .s-SUPPORTED .mk,.arow.s-SUPPORTED .mk{color:var(--ok)}
-  .s-CONTRADICTED .mk,.arow.s-CONTRADICTED .mk{color:var(--against)}
-  .s-UNSUPPORTED .mk,.arow.s-UNSUPPORTED .mk{color:var(--none)}
-  .s-UNCHECKABLE .mk,.arow.s-UNCHECKABLE .mk{color:var(--moot)}
+  .arow .t{font-size:14.5px;line-height:1.35;letter-spacing:-.012em}
+  .arow .w{font-size:12px;color:var(--fg-3);margin-top:4px}
 
   /* ---- rules ---- */
-  #about{padding:calc(var(--top) + 58px) 18px calc(var(--nav) + var(--bot) + var(--strip) + 40px);
-         max-width:36rem}
-  #about h2{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-            color:var(--ink-3);margin:32px 0 12px}
+  #about{padding:calc(var(--top) + 60px) 0 calc(var(--nav) + var(--bot) + var(--strip) + 40px)}
+  #about h2{font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--fg-3);margin:30px 0 12px}
   #about h2:first-child{margin-top:0}
-  #about p{font-size:15px;line-height:1.6;color:var(--ink-2);margin-bottom:13px}
+  #about p{font-size:15px;line-height:1.6;color:var(--fg-2);margin-bottom:13px}
   #about .k{display:grid;grid-template-columns:auto 1fr;gap:10px 13px;align-items:baseline;
-            padding:13px 0;border-top:1px solid var(--rule)}
+            padding:13px 0;border-top:1px solid var(--line)}
   #about .sv{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
              letter-spacing:.1em;white-space:nowrap}
-  #about .k span:last-child{font-size:14px;color:var(--ink-2);line-height:1.5}
+  #about .k span:last-child{font-size:14px;color:var(--fg-2);line-height:1.5}
 
-  /* ---- screen title ---- */
   #vtitle{
     position:fixed;left:0;right:0;top:0;z-index:25;display:none;
-    padding:calc(var(--top) + 8px) 18px 0;height:calc(var(--top) + 46px);
-    align-items:center;background:var(--paper);
-    font-size:15px;font-weight:600;letter-spacing:.015em;
+    height:calc(var(--top) + 48px);padding-top:var(--top);
+    padding-left:var(--gut);padding-right:var(--gut);
+    align-items:center;background:var(--ground);border-bottom:1px solid var(--line);
+    font-size:16px;font-weight:600;letter-spacing:-.012em;
   }
   #vtitle.on{display:flex}
 
   /* ---- sheets ---- */
-  .scrim{position:fixed;inset:0;z-index:50;background:rgba(13,13,13,.32);display:none}
+  .scrim{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none}
   .scrim.on{display:block}
   .sheet{
-    position:absolute;left:0;right:0;bottom:0;background:var(--paper);
-    border-radius:16px 16px 0 0;padding:10px 18px calc(24px + var(--bot));
-    max-height:88%;overflow-y:auto;
+    position:absolute;left:0;right:0;bottom:0;background:var(--card);
+    border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+    padding:10px 16px calc(24px + var(--bot));max-height:88%;overflow-y:auto;
+    margin:0 auto;max-width:var(--col);
   }
-  .handle{width:34px;height:4px;border-radius:999px;background:var(--rule);margin:0 auto 16px}
-  .grp{border-top:1px solid var(--rule);padding:4px 0}
+  .handle{width:34px;height:4px;border-radius:999px;background:var(--line-2);margin:0 auto 16px}
+  .grp{border-top:1px solid var(--line);padding:4px 0}
   .grp:first-of-type{border-top:0}
-  .grp button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 2px;
-              font-size:15px;text-align:left}
+  .grp button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 2px;font-size:15px;text-align:left}
   .grp button svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.6;fill:none;flex:none}
   .grp button.danger{color:var(--against)}
 
-  /* ---- file form ---- */
-  .sheet h3{font-size:21px;font-weight:500;letter-spacing:-.022em;margin-bottom:8px}
-  .sheet .intro{font-size:14px;color:var(--ink-2);line-height:1.55;margin-bottom:22px}
+  .sheet h3{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+  .sheet .intro{font-size:14px;color:var(--fg-2);line-height:1.55;margin-bottom:22px}
   .field{margin-bottom:15px}
   .field label{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
                font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-               color:var(--ink-3);margin-bottom:7px}
+               color:var(--fg-3);margin-bottom:7px}
   .field input,.field textarea,.field select{
-    width:100%;background:var(--paper);color:var(--ink);
-    border:1px solid var(--rule);padding:11px 12px;font:inherit;font-size:15px;
-    border-radius:6px;
+    width:100%;background:var(--ground);color:var(--fg);
+    border:1px solid var(--line-2);padding:11px 12px;font:inherit;font-size:15px;border-radius:8px;
   }
-  .field input:focus,.field textarea:focus,.field select:focus{
-    outline:none;border-color:var(--ink);
-  }
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--fg-2)}
   .field textarea{resize:vertical;line-height:1.45}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 18px;
-    border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink);
+    border:1px solid var(--line-2);border-radius:999px;background:none;color:var(--fg);
     font-size:14px;font-weight:500;
   }
-  .btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn:hover{border-color:var(--fg-2)}
+  .btn.pri{background:var(--fg);color:var(--ground);border-color:var(--fg)}
   .row{display:flex;gap:9px;margin-top:6px}
   .row .btn{flex:1}
-  .err{margin-top:14px;padding:13px;border:1px solid #f0dcc9;background:#fdf4ed;
-       color:var(--against);font-size:13.5px;line-height:1.5;border-radius:6px}
-  .okmsg{margin-top:14px;padding:13px;border:1px solid #cfe6d8;background:#f1f8f3;
-         color:var(--ok);font-size:13.5px;border-radius:6px}
-  #fSources .src{border:1px solid var(--rule);padding:12px;margin-bottom:9px;border-radius:6px}
-  #fSources .rm{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+  .err{margin-top:14px;padding:13px;border:1px solid rgba(240,138,60,.35);
+       background:rgba(240,138,60,.1);color:var(--against);font-size:13.5px;line-height:1.5;border-radius:8px}
+  .okmsg{margin-top:14px;padding:13px;border:1px solid rgba(78,199,127,.3);
+         background:rgba(78,199,127,.1);color:var(--ok);font-size:13.5px;border-radius:8px}
+  #fSources .src{border:1px solid var(--line);padding:12px;margin-bottom:9px;border-radius:8px}
+  #fSources .rm{font-size:12.5px;color:var(--fg-3);margin-top:4px}
 
-  /* ---- toast ---- */
   #toast{
-    position:fixed;z-index:70;left:14px;right:14px;
+    position:fixed;z-index:70;left:var(--gut);right:var(--gut);
     bottom:calc(var(--nav) + var(--bot) + var(--strip) + 14px);
-    background:var(--ink);color:var(--paper);border-radius:10px;padding:13px 15px;
+    max-width:var(--col);margin:0 auto;
+    background:var(--card-2);border:1px solid var(--line-2);color:var(--fg);
+    border-radius:10px;padding:13px 15px;
     display:none;align-items:center;gap:11px;font-size:13.5px;line-height:1.35;
   }
   #toast.on{display:flex}
-  #toast .x{width:20px;height:20px;flex:none;border-radius:999px;background:rgba(255,255,255,.16);
+  #toast .x{width:20px;height:20px;flex:none;border-radius:999px;background:var(--line-2);
             display:grid;place-items:center}
-  #toast .x svg{width:10px;height:10px;stroke:#fff;stroke-width:2.4;fill:none}
+  #toast .x svg{width:10px;height:10px;stroke:var(--fg-2);stroke-width:2.4;fill:none}
 
-  /* ---- nav ---- */
+  /* ---- bottom bar (mobile) ---- */
   nav{
     position:fixed;left:0;right:0;bottom:0;z-index:30;
     height:calc(var(--nav) + var(--bot));padding-bottom:var(--bot);
     display:flex;align-items:center;justify-content:space-around;
-    background:var(--paper);border-top:1px solid var(--rule);
+    background:var(--ground);border-top:1px solid var(--line);
   }
-  nav button{width:52px;height:44px;display:grid;place-items:center;color:var(--ink-3)}
-  nav button[aria-selected="true"]{color:var(--ink)}
+  nav button{width:52px;height:42px;display:grid;place-items:center;color:var(--fg-3)}
+  nav button[aria-selected="true"]{color:var(--fg)}
   nav button svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.6;fill:none}
-  nav .compose{width:38px;height:38px;background:var(--ink);color:var(--paper);border-radius:999px}
-  nav .compose svg{width:19px;height:19px;stroke:var(--paper);stroke-width:2}
+  nav .compose{width:38px;height:38px;background:var(--fg);color:var(--ground);border-radius:999px}
+  nav .compose svg{width:19px;height:19px;stroke:var(--ground);stroke-width:2}
   nav .me{width:24px;height:24px;border-radius:999px;border:1px solid currentColor;
           display:grid;place-items:center}
   nav .me svg{width:13px;height:13px}
 
-  /* ---- install ---- */
   #install{
-    display:none;position:fixed;left:14px;right:14px;z-index:35;
-    bottom:calc(var(--nav) + var(--bot) + 8px);
-    background:var(--ink);color:var(--paper);
+    display:none;position:fixed;left:var(--gut);right:var(--gut);z-index:35;
+    bottom:calc(var(--nav) + var(--bot) + 8px);max-width:var(--col);margin:0 auto;
+    background:var(--fg);color:var(--ground);
     padding:8px 9px 8px 15px;border-radius:999px;
     align-items:center;gap:9px;font-size:13px;line-height:1.25;
   }
   #install.on{display:flex}
-  #install .btn{height:30px;background:var(--paper);color:var(--ink);border-color:var(--paper);font-size:12.5px}
-  #install .btn.ghost{background:none;color:var(--paper);border-color:rgba(255,255,255,.4)}
+  #install .btn{height:30px;background:var(--ground);color:var(--fg);border-color:var(--ground);font-size:12.5px}
+  #install .btn.ghost{background:none;color:var(--ground);border-color:rgba(11,14,15,.35)}
+
+  /* ================= desktop: a real web app, not a stretched phone =========
+     The bottom bar becomes a left rail, the column centres against it, and the
+     compose control joins the rail as a labelled button. */
+  @media (min-width:900px){
+    :root{--gut:20px;--nav:0px}
+    #top{
+      left:0;right:0;height:56px;padding-top:0;
+      padding-left:20px;padding-right:20px;
+    }
+    body.has-banner #top{top:25px}
+    #sample{padding-top:6px}
+    body.has-banner{--top:25px}
+    body.detail #selName{margin:0;font-size:16px;letter-spacing:-.012em;
+      text-transform:none;color:var(--fg)}
+    #back{left:auto;right:20px;top:calc(var(--top) + 12px)}
+
+    nav{
+      top:calc(var(--top) + 56px);bottom:0;left:0;right:auto;
+      width:var(--rail);height:auto;padding:16px 12px;
+      flex-direction:column;justify-content:flex-start;align-items:stretch;gap:2px;
+      border-top:0;border-right:1px solid var(--line);
+    }
+    nav button{
+      width:100%;height:40px;display:flex;align-items:center;gap:12px;
+      padding:0 12px;border-radius:8px;font-size:14.5px;font-weight:500;
+      justify-content:flex-start;
+    }
+    nav button:hover{background:var(--card)}
+    nav button[aria-selected="true"]{background:var(--card-2)}
+    nav button::after{content:attr(data-label)}
+    nav .compose{
+      width:100%;height:40px;border-radius:999px;margin-bottom:8px;
+      justify-content:center;gap:8px;font-weight:600;
+    }
+    nav .compose::after{content:"File a record"}
+    nav .me{width:22px;height:22px}
+
+    .view{left:var(--rail)}
+    #chips{left:var(--rail);top:calc(var(--top) + 56px)}
+    #chipRow{padding-left:20px;padding-right:20px}
+    #feed{padding-top:calc(var(--top) + 118px)}
+    #profile,#detail,#archive,#about{padding-top:calc(var(--top) + 76px)}
+    #toast,#install,.sheet{left:var(--rail)}
+    .col{padding:0 20px}
+
+    .pcard{margin-bottom:14px}
+    .prow .cl{font-size:15.5px}
+  }
+  @media (min-width:1180px){
+    :root{--col:760px}
+  }
 </style>
 </head>
 <body class="has-banner">
 <!--
-THESIS: A record of claims that refuses to rank them. It declines the dark,
-high-density "intelligence terminal" every diligence tool ships, and reads as a
-document instead of a dashboard.
-OWN-WORLD: Paper white, near-black ink, hairline rules at #e6e6e6, one neutral
-grotesk, monospace reserved for documents and labels. Four reserved hues, one
-per status, each carried by a bordered field rather than a scattered accent.
-A filled square means a document is on file; a hollow ring means none was found.
-STORY: An investor arrives with one claim in mind, sees what the record says
-about it in a second, opens the document, and leaves knowing whether to ask.
-FIRST VIEWPORT: Wordmark, filter row, then the claim itself at 20px as the
-loudest thing on screen, its status field beneath it, the source document in a
-mono block under that.
-FORM: Brief-pinned world (Codex / OpenAI marketing), which beats the roll.
-Raised by two declined challengers: seven-segment donates "absence is drawn as
-deliberately as light" (UNSUPPORTED renders in full ink, never dimmed); the
-glazier partition donates "colour reserved, carried by a field". Seed e2f5b73e.
+THESIS: A forum whose rows are people, that still refuses to score them. It
+declines the one move every "review the founder" product makes -- summing
+verdicts into a number under a face -- and keeps status attached to the claim.
+OWN-WORLD: Reddit at night. Ground #0b0e0f, cards #141a1c on 1px #242e31,
+12px radii, one neutral grotesk, monospace for documents and labels. Four
+reserved hues, one per status, carried by a tinted field on the claim row.
+A filled square means a document is on file; a hollow ring means none was.
+STORY: An investor scans people, sees every claim filed against one of them
+with its own status, opens the document, and leaves knowing what to ask.
+FIRST VIEWPORT: Filter row, then profile cards -- avatar, name, role, org,
+handle, a plain count of records -- each opening into its claims beneath.
+FORM: Brief-pinned (dark Reddit forum, card format, profile-focused), which
+beats the roll. Seed e2f5b73e.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the
 finish review, the verdict, DESIGN.md, and every shipping raster carrying its
 provenance.
@@ -376,10 +427,11 @@ provenance.
   <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
 </button>
 
-<div id="chips"></div>
+<div id="chips"><div class="col" id="chipRow"></div></div>
 
 <main>
   <section class="view on" id="feed"></section>
+  <section class="view" id="profile"></section>
   <section class="view" id="detail"></section>
   <section class="view" id="archive"></section>
   <section class="view" id="about">
@@ -464,19 +516,19 @@ provenance.
 </div>
 
 <nav>
-  <button data-view="feed" aria-selected="true" aria-label="Feed">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+  <button data-view="feed" data-label="Feed" aria-selected="true" aria-label="Feed">
+    <svg viewBox="0 0 24 24"><circle cx="8" cy="8.5" r="3"/><path d="M3 19a5 5 0 0110 0"/><circle cx="17.5" cy="9.5" r="2.2"/><path d="M15 19a4 4 0 016.5-3.1"/></svg>
   </button>
-  <button data-view="archive" aria-selected="false" aria-label="Archive">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+  <button data-view="archive" data-label="Archive" aria-selected="false" aria-label="Archive">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 001 1h12a1 1 0 001-1V8"/><path d="M10 12h4"/></svg>
   </button>
   <button class="compose" id="openSheet" aria-label="File a record">
     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
   </button>
-  <button data-view="reports" aria-selected="false" aria-label="Notices">
+  <button data-view="reports" data-label="Notices" aria-selected="false" aria-label="Notices">
     <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-2 8-2 8h16s-2-1-2-8"/><path d="M13.7 20a2 2 0 01-3.4 0"/></svg>
   </button>
-  <button data-view="about" aria-selected="false" aria-label="Rules">
+  <button data-view="about" data-label="Rules" aria-selected="false" aria-label="Rules">
     <span class="me"><svg viewBox="0 0 24 24" style="stroke:#8a8a8a"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0114.4 0"/></svg></span>
   </button>
 </nav>
@@ -536,6 +588,39 @@ const SAMPLES = [
     flip: "An income statement covering the period, or a withdrawal of the no-capital half of the claim."
   },
   {
+    claim: "Nullset has never taken outside money.",
+    who: "Dex Mallory, founder, Nullset", handle: "@nullset_dex",
+    made: "X post, 2026-06-03", url: "https://x.com/nullset_dex/status/1799711200000000009",
+    status: "CONTRADICTED",
+    doc: "FORM D (SEC) · filed 2026-02-28\nNullset Labs Inc.\n\n  Total amount sold ...... $2,200,000\n\nA Form D records a sale of securities\nto outside investors. The filing\npredates the post by three months.",
+    flip: "A showing that the Form D was withdrawn, or that the sale did not close."
+  },
+  {
+    claim: "We turned down a term sheet at a $90M valuation.",
+    who: "Dex Mallory, founder, Nullset", handle: "@nullset_dex",
+    made: "X post, 2026-07-19", url: "https://x.com/nullset_dex/status/1816528400000000010",
+    status: "UNCHECKABLE",
+    doc: "No public document exists.\n\nTerm sheets are private instruments and\na declined one leaves no filing, no\nregistry entry, and no cache.\n\nUNCHECKABLE is not a judgment. It is a\nstatement about what is on the record.",
+    flip: "Publication of the term sheet by a party to it."
+  },
+  {
+    claim: "Groundstate is hiring across twelve countries.",
+    who: "Ines Vartan, founder, Groundstate", handle: "@ines_groundstate",
+    made: "X post, 2026-08-07", url: "https://x.com/ines_groundstate/status/1821899000000000011",
+    status: "UNSUPPORTED",
+    doc: "LIVE JOB POSTINGS · 2026-08-07\ngroundstate.example/careers\n\n  Countries listed on postings ..... 4\n\nA careers page is not a complete\nrecord of where a company hires, so\nthis settles nothing either way.",
+    flip: "Postings, entity registrations, or an employer-of-record disclosure covering twelve countries."
+  },
+  {
+    claim: "Saltpath's churn is under one percent monthly.",
+    who: "Wren Adeyemi, founder, Saltpath", handle: "@wrensaltpath",
+    made: "X post, 2026-09-04", url: "https://x.com/wrensaltpath/status/1831644500000000012",
+    status: "UNSUPPORTED",
+    doc: "No public document states a churn\nfigure for Saltpath Systems Inc.\n\nNothing was found either way. This is\nthe honest default and not an\naccusation.",
+    flip: "A published cohort retention table, or an investor update the company makes public."
+  }
+,
+  {
     claim: "Three of the five largest US health systems are customers.",
     who: "Callum Bright, CEO, Meridian Health AI", handle: "@callumbright",
     made: "X post, 2026-06-19", url: "https://x.com/callumbright/status/1803422600000000006",
@@ -579,11 +664,34 @@ let feedId = 'all';
 let records = SAMPLES;
 let live = false;   // true only once the archive has actually answered
 let openRec = null; // the record the ••• sheet was opened on
+let openProf = null;
 
 function visible(){
   if (feedId === 'all')  return records;
   if (feedId === 'open') return records.filter(r => r.status !== 'SUPPORTED');
   return records.filter(r => r.status === feedId);
+}
+
+// The claimant string is "Name, role, Company". Split it once, here, so every
+// surface reads the same three parts rather than re-parsing it four ways.
+function parts(who){
+  const bits = String(who || '').split(',').map(x => x.trim()).filter(Boolean);
+  return { name: bits[0] || who || '', role: bits[1] || '', org: bits[2] || '' };
+}
+function initials(name){
+  return name.split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+// Profiles are derived from the records, never stored. A person exists here
+// because a claim of theirs was filed, not the other way round.
+function profiles(list){
+  const m = new Map();
+  for (const r of list){
+    const key = r.handle || r.who;
+    if (!m.has(key)) m.set(key, { key, who:r.who, handle:r.handle, ...parts(r.who), records:[] });
+    m.get(key).records.push(r);
+  }
+  return [...m.values()];
 }
 
 // The tag says SAMPLE per card; the banner says it once at the top. Both are
@@ -600,7 +708,6 @@ async function loadRecords(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!Array.isArray(data.records)) throw new Error('malformed archive response');
-    // Reached it. From here on the screen shows the archive, empty or not.
     live = true;
     records = data.records.map(r => ({
       id: r.id,
@@ -621,20 +728,15 @@ async function loadRecords(){
   }
 }
 
-
 const ICON = {
   doc:  '<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>',
-  copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V4h11"/></svg>',
-  share:'<svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-7 18-3.5-7.5L3 10z"/></svg>',
-  more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9" fill="currentColor"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><circle cx="19" cy="12" r=".9" fill="currentColor"/></svg>',
+  out:  '<svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg>',
 };
 
 // A filled square means a document is on file. A hollow ring means none was
 // found. Both are drawn; neither is dimmed.
 const HAS_DOC = { SUPPORTED:1, CONTRADICTED:1 };
-function mark(status){
-  return `<span class="mk ${HAS_DOC[status] ? 'fill' : 'ring'}"></span>`;
-}
+function mark(status){ return `<span class="mk ${HAS_DOC[status] ? 'fill' : 'ring'}"></span>`; }
 
 function sourceLine(r){
   const n = r.sources === undefined ? (r.doc ? 1 : 0) : r.sources;
@@ -643,64 +745,89 @@ function sourceLine(r){
 }
 
 function renderChips(){
-  $('#chips').innerHTML = FEEDS.map(f => `
+  $('#chipRow').innerHTML = FEEDS.map(f => `
     <button data-feed="${f.id}" aria-selected="${f.id === feedId}">${f.name}</button>`).join('');
 }
 
 function emptyBlock(){
   const bare = live && !records.length;
-  return `<div class="empty">
+  return `<div class="col"><div class="empty">
     <div class="lbl mono">${bare ? 'The archive is open' : 'Nothing here'}</div>
     <h3>${bare ? 'No records have been filed yet.' : 'No records carry this status yet.'}</h3>
-    ${bare ? '<p>A record is a public claim plus a document anyone can open. File the first one with the + button.</p>' : ''}
-  </div>`;
+    ${bare ? '<p>A record is a public claim plus a document anyone can open. File the first one to start a profile.</p>' : ''}
+  </div></div>`;
 }
 
+function claimRow(r, i){
+  return `<button class="prow s-${r.status}" data-rec="${i}">
+      <div class="cl">${esc(r.claim)}</div>
+      <div class="meta">
+        <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
+        ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
+        <span class="where">${esc(r.made || '')}</span>
+      </div>
+    </button>`;
+}
+
+// The feed is people. Each card carries a person and the claims filed against
+// them, every claim keeping its own status. The card never sums those statuses
+// into a figure about the person: status describes the claim, never the person,
+// and a tally on a profile card is a score on a human being.
 function renderFeed(){
   const rs = visible();
   if (!rs.length){ $('#feed').innerHTML = emptyBlock(); return; }
-  $('#feed').innerHTML = rs.map((r, i) => `
-    <article class="post s-${r.status}" data-i="${i}">
-      <div class="phead">
-        <span class="nm">${esc(r.who)}</span>
-        ${r.handle ? `<span class="hd">${esc(r.handle)}</span>` : ''}
-        <span class="tm">${esc((r.made || '').split(', ').pop())}</span>
-      </div>
-      <button class="ptitle" data-open>${esc(r.claim)}</button>
-      <div class="tags">
-        <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
-        ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
-      </div>
-      <div class="pbody">${esc(r.doc)}</div>
-      <div class="pacts">
-        <button data-open>${ICON.doc}${sourceLine(r)}</button>
-        <button data-act="copytext" aria-label="Copy the record">${ICON.copy}</button>
-        <button data-act="share" aria-label="Share">${ICON.share}</button>
-        <button data-more class="grow" aria-label="More">${ICON.more}</button>
-      </div>
-    </article>`).join('');
+  const idx = new Map(rs.map((r, i) => [r, i]));
+  $('#feed').innerHTML = `<div class="col">` + profiles(rs).map(p => `
+    <section class="pcard">
+      <button class="phead" data-prof="${esc(p.key)}">
+        <span class="av">${esc(initials(p.name))}</span>
+        <span class="pwho">
+          <span class="nm">${esc(p.name)}</span>
+          <span class="sub">${[p.role, p.org].filter(Boolean).map(esc).join(' · ')}${
+            p.handle ? ` · <span class="hd">${esc(p.handle)}</span>` : ''}</span>
+        </span>
+        <span class="pcount">${p.records.length} record${p.records.length === 1 ? '' : 's'}</span>
+      </button>
+      <div class="plist">${p.records.map(r => claimRow(r, idx.get(r))).join('')}</div>
+    </section>`).join('') + `</div>`;
+}
+
+function renderProfile(p){
+  $('#profile').innerHTML = `<div class="col">
+    <div class="phero">
+      <span class="av">${esc(initials(p.name))}</span>
+      <span>
+        <h2>${esc(p.name)}</h2>
+        <div class="sub">${[p.role, p.org].filter(Boolean).map(esc).join(' · ')}${
+          p.handle ? ` · <span class="hd">${esc(p.handle)}</span>` : ''}</div>
+      </span>
+    </div>
+    <p class="pnote">${p.records.length} record${p.records.length === 1 ? '' : 's'} on file.
+      ${p.records.length === 1 ? 'It describes' : 'Each describes'} a claim against the documents,
+      not ${esc(p.name)}.</p>
+    <section class="pcard"><div class="plist">${
+      p.records.map((r, i) => claimRow(r, i)).join('')}</div></section>
+  </div>`;
 }
 
 function renderDetail(r){
-  $('#detail').innerHTML = `
-    <div class="s-${r.status}">
+  $('#detail').innerHTML = `<div class="col s-${r.status}">
       <div class="lbl mono">The claim</div>
       <div class="claimtext">${esc(r.claim)}</div>
       <div class="meta">${esc(r.who)}${r.handle ? ` · ${esc(r.handle)}` : ''}<br>${esc(r.made)}</div>
-      <div class="tags" style="margin-top:18px">
+      <div style="margin-top:18px;display:flex;gap:7px;flex-wrap:wrap">
         <span class="tag st">${mark(r.status)}${esc(r.status)}</span>
         ${live ? '' : '<span class="tag samp">SAMPLE</span>'}
       </div>
       ${r.url ? `<div class="sec">
         <div class="lbl mono">Where it was said</div>
-        <a class="where" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
-          <span>${esc(r.url)}</span>
-          <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        <a class="where-l" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
+          <span>${esc(r.url)}</span>${ICON.out}
         </a>
         ${live ? '' : '<p class="wnote">This link is fictional and does not resolve.</p>'}
       </div>` : ''}
       <div class="sec">
-        <div class="lbl mono">The source</div>
+        <div class="lbl mono">The source &middot; ${esc(sourceLine(r))}</div>
         <div class="doc">${esc(r.doc)}</div>
       </div>
       <div class="sec">
@@ -711,18 +838,22 @@ function renderDetail(r){
 }
 
 function openRecord(r){ openRec = r; renderDetail(r); show('detail'); }
+function openProfile(key){
+  const p = profiles(records).find(x => x.key === key);
+  if (!p) return;
+  openProf = p; renderProfile(p); show('profile');
+}
 
 function renderArchive(){
   const rs = visible();
   const head = rs.length
-    ? `${rs.length} record${rs.length === 1 ? '' : 's'} · ${live ? 'archive' : 'sample'}`
+    ? `${rs.length} record${rs.length === 1 ? '' : 's'} · ${profiles(rs).length} ${
+        profiles(rs).length === 1 ? 'person' : 'people'} · ${live ? 'archive' : 'sample'}`
     : (live ? 'No records filed yet' : 'No sample records');
-  $('#archive').innerHTML = `<div class="ghead mono">${head}</div>` +
-    (rs.length
-      ? rs.map((r, i) => `<button class="arow s-${r.status}" data-jump="${i}">
-           ${mark(r.status)}<span><span class="t">${esc(r.claim)}</span>
-           <span class="w">${esc(r.who)}</span></span></button>`).join('')
-      : '');
+  $('#archive').innerHTML = `<div class="col"><div class="ghead">${head}</div>` +
+    rs.map((r, i) => `<button class="arow s-${r.status}" data-rec="${i}">
+         ${mark(r.status)}<span><span class="t">${esc(r.claim)}</span>
+         <span class="w">${esc(r.who)}</span></span></button>`).join('') + `</div>`;
 }
 
 function show(v){
@@ -730,16 +861,18 @@ function show(v){
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === v));
   document.querySelectorAll('nav button[data-view]').forEach(b =>
     b.setAttribute('aria-selected', b.dataset.view === v));
-  const feedish = (v === 'feed');
-  $('#chips').style.display = feedish ? '' : 'none';
-  $('#top').style.display = (v === 'feed' || v === 'detail') ? '' : 'none';
-  $('#back').classList.toggle('on', v === 'detail');
-  document.body.classList.toggle('detail', v === 'detail');
-  $('#selName').textContent = v === 'detail' ? 'Record' : 'Spill';
+  const deep = (v === 'detail' || v === 'profile');
+  $('#chips').style.display = (v === 'feed') ? '' : 'none';
+  $('#top').style.display = (v === 'feed' || deep) ? '' : 'none';
+  $('#back').classList.toggle('on', deep);
+  document.body.classList.toggle('detail', deep);
+  $('#selName').textContent = v === 'detail' ? 'Record' : v === 'profile' ? 'Profile' : 'Spill';
   const t = $('#vtitle');
   t.classList.toggle('on', v === 'archive' || v === 'about');
   t.textContent = v === 'archive' ? 'Archive' : v === 'about' ? 'The rules' : '';
+  if (!deep) lastList = v;
 }
+let lastList = 'feed';
 
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('[data-feed]'); if (!b) return;
@@ -748,10 +881,14 @@ $('#chips').addEventListener('click', e => {
   $('#feed').scrollTo({ top: 0 });
 });
 
-$('#back').addEventListener('click', () => show('feed'));
+$('#back').addEventListener('click', () => {
+  // A record reached from a profile goes back to that profile, not to the feed.
+  if (document.getElementById('detail').classList.contains('on') && openProf) show('profile');
+  else show(lastList);
+});
 
 document.querySelectorAll('nav button[data-view]').forEach(b =>
-  b.addEventListener('click', () => show(b.dataset.view)));
+  b.addEventListener('click', () => { openProf = null; show(b.dataset.view); }));
 $('#openAbout').addEventListener('click', () => show('about'));
 
 /* ---- record actions ---- */
@@ -773,12 +910,18 @@ function act(name, r){
 }
 
 $('#feed').addEventListener('click', e => {
-  const post = e.target.closest('.post'); if (!post) return;
-  const r = visible()[+post.dataset.i]; if (!r) return;
-  if (e.target.closest('[data-more]')){ openRec = r; $('#more').classList.add('on'); return; }
-  const a = e.target.closest('[data-act]');
-  if (a){ act(a.dataset.act, r); return; }
-  if (e.target.closest('[data-open]')) openRecord(r);
+  const prof = e.target.closest('[data-prof]');
+  if (prof){ openProfile(prof.dataset.prof); return; }
+  const row = e.target.closest('[data-rec]');
+  if (row){ openProf = null; openRecord(visible()[+row.dataset.rec]); }
+});
+$('#profile').addEventListener('click', e => {
+  const row = e.target.closest('[data-rec]');
+  if (row && openProf) openRecord(openProf.records[+row.dataset.rec]);
+});
+$('#archive').addEventListener('click', e => {
+  const row = e.target.closest('[data-rec]');
+  if (row){ openProf = null; openRecord(visible()[+row.dataset.rec]); }
 });
 
 $('#more').addEventListener('click', e => {
@@ -786,12 +929,6 @@ $('#more').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   $('#more').classList.remove('on');
   if (b.dataset.act !== 'cancel' && openRec) act(b.dataset.act, openRec);
-});
-
-$('#archive').addEventListener('click', e => {
-  const c = e.target.closest('[data-jump]'); if (!c) return;
-  const r = visible()[+c.dataset.jump];
-  if (r) openRecord(r);
 });
 
 let toastT = null;
